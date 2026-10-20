@@ -31,6 +31,36 @@ class CandleSimulation {
     this.isPaused = false;
     this.activeFilter = 'all'; // 'all' | 'solitary' | 'groups' | 'girls' | 'boys'
 
+    // Parâmetros customizáveis em tempo real (Configuração Padrão)
+    this.params = {
+      scaleMode: 'tenth',
+      solitaryPerGroup: 25,
+      sizes: {
+        solitaryGirl: 8,
+        solitaryBoy: 8,
+        connectedGirl: 15,
+        connectedBoy: 15,
+        minorFraction: 4
+      },
+      speeds: {
+        solitary: 0.5,
+        group: 1.5,
+        orbit: 1
+      },
+      colors: {
+        background: '#140916',
+        connectedBoy: '#13f8fb',
+        connectedGirl: '#f87272',
+        solitaryBoy: '#8aeef0',
+        solitaryGirl: '#feb4b4'
+      }
+    };
+
+    // Rastreamento de colisões sonoras (Constelações e Solitários em Dm)
+    this.touchingGroups = new Set();
+    this.touchingSolitaries = new Set();
+    this.lastSolitaryAudioTime = 0;
+
     this.init();
   }
 
@@ -51,36 +81,75 @@ class CandleSimulation {
   }
 
   /**
-   * Cria os 180 estudantes solitários:
-   * 110 meninas (luz branca) e 70 meninos (luz amarela).
+   * Cria os estudantes solitários conforme o modo de escala ativo:
+   * Modo "tenth": 1 ponto para cada 0,1% da população escolar (1.000 focos totais).
+   * Modo "percent": 1 ponto para cada 1% inteiro e pontos menores para os 0,1% fracionários.
    */
   createSolitaries() {
-    const genders = [
-      ...new Array(this.config.solitary.girls).fill('girl'),
-      ...new Array(this.config.solitary.boys).fill('boy')
-    ];
-
-    // Embaralha para distribuição espacial homogênea
-    this.shuffle(genders);
-
+    const loc = (this.config && this.config.locality) || (window.PENSE_DATA && window.PENSE_DATA.database['brasil']);
     const pad = 40;
-    for (let i = 0; i < genders.length; i++) {
+    const items = [];
+
+    if (this.params.scaleMode === 'percent') {
+      // 1 ponto = 1% + pontos menores para cada 0,1%
+      const girlRate = loc ? loc.mulher : 5.7;
+      const boyRate = loc ? loc.homem : 6.5;
+
+      const girlInt = Math.floor(girlRate);
+      const girlFrac = Math.round((girlRate - girlInt) * 10);
+      const boyInt = Math.floor(boyRate);
+      const boyFrac = Math.round((boyRate - boyInt) * 10);
+
+      for (let i = 0; i < girlInt; i++) {
+        items.push({ gender: 'girl', isMinor: false });
+      }
+      for (let i = 0; i < girlFrac; i++) {
+        items.push({ gender: 'girl', isMinor: true });
+      }
+      for (let i = 0; i < boyInt; i++) {
+        items.push({ gender: 'boy', isMinor: false });
+      }
+      for (let i = 0; i < boyFrac; i++) {
+        items.push({ gender: 'boy', isMinor: true });
+      }
+    } else {
+      // Modo clássico: 1 ponto = 0,1% (amostra de 1.000 focos)
+      const girlsCount = (this.config && this.config.solitary && this.config.solitary.girls) || 29;
+      const boysCount = (this.config && this.config.solitary && this.config.solitary.boys) || 33;
+
+      for (let i = 0; i < girlsCount; i++) {
+        items.push({ gender: 'girl', isMinor: false });
+      }
+      for (let i = 0; i < boysCount; i++) {
+        items.push({ gender: 'boy', isMinor: false });
+      }
+    }
+
+    this.shuffle(items);
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
       const angle = Math.random() * Math.PI * 2;
       const speed = this.randomRange(
         this.config.physics.solitarySpeedMin,
         this.config.physics.solitarySpeedMax
       );
 
+      const radius = it.isMinor
+        ? this.params.sizes.minorFraction
+        : (it.gender === 'girl' ? this.params.sizes.solitaryGirl : this.params.sizes.solitaryBoy);
+
       this.solitaries.push({
         id: `solitary-${i}`,
         isSolitary: true,
-        gender: genders[i],
+        gender: it.gender,
+        isMinor: it.isMinor,
         x: this.randomRange(pad, this.width - pad),
         y: this.randomRange(pad, this.height - pad),
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         baseSpeed: speed,
-        radius: this.randomRange(18, 24),
+        radius: radius,
         flickerPhase: Math.random() * Math.PI * 2,
         flickerSpeed: this.randomRange(0.06, 0.12),
         flicker: 1.0,
@@ -93,12 +162,55 @@ class CandleSimulation {
   }
 
   /**
-   * Cria as fogueiras coletivas na proporção de 1 grupo para cada 10 solitários
-   * (18 fogueiras somando exatamente 820 membros: 410 meninas e 410 meninos, ~45 por grupo).
+   * Cria as fogueiras coletivas na proporção configurável de fogueiras para solitários.
    */
   createGroups() {
-    const groupCount = Math.max(1, this.config.groupCount);
-    const totalMembers = this.config.connectedCount;
+    const loc = (this.config && this.config.locality) || (window.PENSE_DATA && window.PENSE_DATA.database['brasil']);
+    const pad = 65;
+    const memberPool = [];
+
+    if (this.params.scaleMode === 'percent') {
+      // 1 ponto = 1% + pontos menores para cada 0,1%
+      const girlConnRate = Math.max(0, 100 - (loc ? loc.mulher : 5.7));
+      const boyConnRate = Math.max(0, 100 - (loc ? loc.homem : 6.5));
+
+      const girlInt = Math.floor(girlConnRate);
+      const girlFrac = Math.round((girlConnRate - girlInt) * 10);
+      const boyInt = Math.floor(boyConnRate);
+      const boyFrac = Math.round((boyConnRate - boyInt) * 10);
+
+      for (let i = 0; i < girlInt; i++) {
+        memberPool.push({ gender: 'girl', isMinor: false });
+      }
+      for (let i = 0; i < girlFrac; i++) {
+        memberPool.push({ gender: 'girl', isMinor: true });
+      }
+      for (let i = 0; i < boyInt; i++) {
+        memberPool.push({ gender: 'boy', isMinor: false });
+      }
+      for (let i = 0; i < boyFrac; i++) {
+        memberPool.push({ gender: 'boy', isMinor: true });
+      }
+    } else {
+      // 1 ponto = 0,1% (amostra de 1.000 focos)
+      const girlsCount = (this.config && this.config.connected && this.config.connected.girls) || 471;
+      const boysCount = (this.config && this.config.connected && this.config.connected.boys) || 467;
+
+      for (let i = 0; i < girlsCount; i++) {
+        memberPool.push({ gender: 'girl', isMinor: false });
+      }
+      for (let i = 0; i < boysCount; i++) {
+        memberPool.push({ gender: 'boy', isMinor: false });
+      }
+    }
+
+    this.shuffle(memberPool);
+
+    // Proporção de fogueiras para solitários (customizável por slider, padrão 1 : 10)
+    const ratio = this.params.solitaryPerGroup || 10;
+    const solCount = this.solitaries.length > 0 ? this.solitaries.length : (this.config.solitaryCount || 62);
+    const groupCount = Math.max(1, Math.round(solCount / ratio));
+    const totalMembers = memberPool.length;
 
     // Distribuição balanceada de membros entre os grupos
     const avgPerGroup = Math.floor(totalMembers / groupCount);
@@ -108,25 +220,22 @@ class CandleSimulation {
       sizes[i]++;
     }
 
-    // Variação orgânica suave mantendo a soma exata
+    // Variação orgânica suave
     const maxDelta = Math.max(1, Math.floor(avgPerGroup * 0.12));
     for (let i = 0; i < groupCount - 1; i += 2) {
       const delta = Math.floor((Math.random() * 2 - 1) * maxDelta);
-      if (sizes[i] + delta >= 10 && sizes[i + 1] - delta >= 10) {
+      if (sizes[i] + delta >= 4 && sizes[i + 1] - delta >= 4) {
         sizes[i] += delta;
         sizes[i + 1] -= delta;
       }
     }
 
-    // Pool de meninas e meninos conectados da localidade
-    const genderPool = [
-      ...new Array(this.config.connected.girls).fill('girl'),
-      ...new Array(this.config.connected.boys).fill('boy')
-    ];
-    this.shuffle(genderPool);
+    const maxOrbit = Math.min(95, Math.max(34, Math.sqrt(avgPerGroup) * 5.8));
+    this.config.physics.groupOrbitRadiusMax = maxOrbit;
+    this.config.physics.solitaryAvoidanceRadius = maxOrbit + 26;
 
-    let genderIdx = 0;
-    const pad = 65;
+    let memberIdx = 0;
+    this.groups = [];
 
     for (let g = 0; g < groupCount; g++) {
       const size = sizes[g];
@@ -145,23 +254,28 @@ class CandleSimulation {
       };
 
       const members = [];
-      const maxOrbit = this.config.physics.groupOrbitRadiusMax; // ~48px
 
       for (let m = 0; m < size; m++) {
-        const gender = genderPool[genderIdx++];
-        // Distribuição orgânica em disco: núcleo denso e dispersão gradual nas bordas
+        const item = memberPool[memberIdx++];
+        if (!item) break;
+
         const baseDist = (4 + maxOrbit * Math.sqrt(Math.random()));
         const baseAngle = Math.random() * Math.PI * 2;
         const orbitSpeed = this.randomRange(0.0015, 0.0055) * (Math.random() < 0.5 ? 1 : -1);
 
+        const radius = item.isMinor
+          ? this.params.sizes.minorFraction
+          : (item.gender === 'girl' ? this.params.sizes.connectedGirl : this.params.sizes.connectedBoy);
+
         members.push({
           id: `group-${g}-member-${m}`,
-          gender: gender,
+          gender: item.gender,
+          isMinor: item.isMinor,
           baseDist: baseDist,
           orbitAngle: baseAngle,
           orbitSpeed: orbitSpeed,
           breathPhase: Math.random() * Math.PI * 2,
-          radius: this.randomRange(18, 24),
+          radius: radius,
           flickerPhase: Math.random() * Math.PI * 2,
           flickerSpeed: this.randomRange(0.06, 0.13),
           flicker: 1.0,
@@ -173,7 +287,7 @@ class CandleSimulation {
       this.groups.push({
         id: `group-${g}`,
         isSolitary: false,
-        size: size,
+        size: members.length,
         center: groupCenter,
         orbitRadius: maxOrbit,
         members: members,
@@ -234,6 +348,7 @@ class CandleSimulation {
       for (let j = i + 1; j < this.groups.length; j++) {
         const g2 = this.groups[j];
         const c2 = g2.center;
+        const g2Dragged = Boolean(this.mouse.draggedItem && this.mouse.draggedItem.target === g2);
         const dx = c1.x - c2.x;
         const dy = c1.y - c2.y;
         let dist = Math.hypot(dx, dy);
@@ -272,11 +387,28 @@ class CandleSimulation {
             c1.vy += (ny * force + ty);
           }
 
-          const g2Dragged = Boolean(this.mouse.draggedItem && this.mouse.draggedItem.target === g2);
           if (!g2Dragged) {
             c2.vx -= (nx * force - tx);
             c2.vy -= (ny * force - ty);
           }
+        }
+
+        // Toque Suave entre Constelações (com histerese para evitar re-gatilhos rápidos)
+        const touchDist = r1 + r2 + 10;
+        const pairKey = `${g1.id || i}_${g2.id || j}`;
+
+        if (dist < touchDist) {
+          if (!this.touchingGroups.has(pairKey)) {
+            this.touchingGroups.add(pairKey);
+            if (window.soundscape && window.soundscape.isPlaying) {
+              const relSpeed = Math.hypot(c1.vx - c2.vx, c1.vy - c2.vy);
+              const intensity = Math.min(1.5, Math.max(0.6, relSpeed * 2.8 + (g1Dragged || g2Dragged ? 0.4 : 0)));
+              const normX = ((c1.x + c2.x) / 2) / (this.width || window.innerWidth || 1920);
+              window.soundscape.triggerConstellationTouch(intensity, normX);
+            }
+          }
+        } else if (dist > touchDist + 22) {
+          this.touchingGroups.delete(pairKey);
         }
       }
     }
@@ -289,9 +421,10 @@ class CandleSimulation {
       // Se o grupo estiver sendo arrastado pelo usuário, sua posição é gerida pelo cursor
       const isBeingDragged = this.mouse.draggedItem && this.mouse.draggedItem.target === grp;
       if (!isBeingDragged) {
-        // Deslocamento retilíneo
-        c.x += c.vx;
-        c.y += c.vy;
+        // Deslocamento retilíneo com multiplicador de velocidade customizado
+        const grpSpeed = (this.params && this.params.speeds && this.params.speeds.group) || 1.0;
+        c.x += c.vx * grpSpeed;
+        c.y += c.vy * grpSpeed;
 
         // Suave curva de afastamento das bordas para manter grupos circulando pela tela
         if (c.x < margin) {
@@ -347,7 +480,8 @@ class CandleSimulation {
       // Atualiza órbitas harmônicas e posições de cada membro
       for (let m = 0; m < grp.members.length; m++) {
         const mem = grp.members[m];
-        mem.orbitAngle += mem.orbitSpeed;
+        const orbSpeed = (this.params && this.params.speeds && this.params.speeds.orbit) || 1.0;
+        mem.orbitAngle += mem.orbitSpeed * orbSpeed;
 
         // Respiro sutil radial da fogueira
         const breathing = 1 + 0.08 * Math.sin(this.time * 0.02 + mem.breathPhase);
@@ -390,6 +524,7 @@ class CandleSimulation {
 
       for (let j = i + 1; j < this.solitaries.length; j++) {
         const s2 = this.solitaries[j];
+        const s2Dragged = Boolean(this.mouse.draggedItem && this.mouse.draggedItem.target === s2);
         const dx = s1.x - s2.x;
         const dy = s1.y - s2.y;
         let dist = Math.hypot(dx, dy);
@@ -417,11 +552,30 @@ class CandleSimulation {
             s1.vy += (ny * force + ty);
           }
 
-          const s2Dragged = Boolean(this.mouse.draggedItem && this.mouse.draggedItem.target === s2);
           if (!s2Dragged) {
             s2.vx -= (nx * force - tx);
             s2.vy -= (ny * force - ty);
           }
+        }
+
+        // Choque dos Estudantes Solitários (mais baixo, mais triste, unificado em Dm)
+        const shockRadius = mutualRadius * 0.72;
+        const solitaryPairKey = `${s1.id || i}_${s2.id || j}`;
+
+        if (dist < shockRadius) {
+          if (!this.touchingSolitaries.has(solitaryPairKey)) {
+            this.touchingSolitaries.add(solitaryPairKey);
+            const now = performance.now();
+            if (window.soundscape && window.soundscape.isPlaying && (now - this.lastSolitaryAudioTime > 180)) {
+              this.lastSolitaryAudioTime = now;
+              const relSpeed = Math.hypot(s1.vx - s2.vx, s1.vy - s2.vy);
+              const intensity = Math.min(1.4, Math.max(0.5, relSpeed * 2.8 + (s1Dragged || s2Dragged ? 0.35 : 0)));
+              const normX = ((s1.x + s2.x) / 2) / (this.width || window.innerWidth || 1920);
+              window.soundscape.triggerSolitaryCollision(intensity, normX);
+            }
+          }
+        } else if (dist > mutualRadius + 6) {
+          this.touchingSolitaries.delete(solitaryPairKey);
         }
       }
     }
@@ -492,9 +646,10 @@ class CandleSimulation {
           s.vy *= 1.04;
         }
 
-        // Movimentação
-        s.x += s.vx;
-        s.y += s.vy;
+        // Movimentação com multiplicador de velocidade customizado
+        const solSpeed = (this.params && this.params.speeds && this.params.speeds.solitary) || 1.0;
+        s.x += s.vx * solSpeed;
+        s.y += s.vy * solSpeed;
 
         // Rebote elástico estrito nas extremidades físicas
         if (s.x < pad) {
@@ -904,6 +1059,7 @@ class CandleSimulation {
         nearest = {
           type: 'solitary',
           gender: s.gender,
+          isMinor: s.isMinor || false,
           age: s.age,
           x: s.x,
           y: s.y,
@@ -933,6 +1089,122 @@ class CandleSimulation {
     }
 
     return nearest;
+  }
+
+  /**
+   * Atualiza os tamanhos (raios em px) dos pontos de luz em tempo real.
+   */
+  updateSizes(sizes = {}) {
+    Object.assign(this.params.sizes, sizes);
+    for (let s of this.solitaries) {
+      if (s.isMinor) {
+        s.radius = this.params.sizes.minorFraction;
+      } else {
+        s.radius = s.gender === 'girl' ? this.params.sizes.solitaryGirl : this.params.sizes.solitaryBoy;
+      }
+    }
+    for (let g of this.groups) {
+      for (let m of g.members) {
+        if (m.isMinor) {
+          m.radius = this.params.sizes.minorFraction;
+        } else {
+          m.radius = m.gender === 'girl' ? this.params.sizes.connectedGirl : this.params.sizes.connectedBoy;
+        }
+      }
+    }
+  }
+
+  /**
+   * Atualiza os multiplicadores de velocidade dos pontos em tempo real.
+   */
+  updateSpeeds(speeds = {}) {
+    Object.assign(this.params.speeds, speeds);
+  }
+
+  /**
+   * Atualiza a proporção de fogueiras para solitários e reorganiza os agrupamentos.
+   */
+  setSolitaryPerGroup(ratio) {
+    this.params.solitaryPerGroup = Math.max(2, Math.min(30, Math.round(ratio)));
+    this.createGroups();
+    this.addRipple(this.width / 2, this.height / 2);
+  }
+
+  /**
+   * Altera entre o modo "tenth" (1 ponto = 0,1%) e o modo "percent" (1 ponto = 1% + menores 0,1%).
+   */
+  setScaleMode(mode) {
+    if (this.params.scaleMode === mode) return;
+    this.params.scaleMode = mode;
+    this.init();
+    this.addRipple(this.width / 2, this.height / 2);
+  }
+
+  /**
+   * Restaura todos os parâmetros para os valores originais da pesquisa.
+   */
+  resetParams() {
+    this.params.scaleMode = 'tenth';
+    this.params.solitaryPerGroup = 25;
+    this.params.sizes = {
+      solitaryGirl: 8,
+      solitaryBoy: 8,
+      connectedGirl: 15,
+      connectedBoy: 15,
+      minorFraction: 4
+    };
+    this.params.speeds = {
+      solitary: 0.5,
+      group: 1.5,
+      orbit: 1
+    };
+    this.params.colors = {
+      background: '#140916',
+      connectedBoy: '#13f8fb',
+      connectedGirl: '#f87272',
+      solitaryBoy: '#8aeef0',
+      solitaryGirl: '#feb4b4'
+    };
+    this.init();
+    this.addRipple(this.width / 2, this.height / 2);
+  }
+
+  /**
+   * Retorna estatísticas detalhadas da simulação para a interface e legenda.
+   */
+  getSimulationStats() {
+    const loc = (this.config && this.config.locality) || (window.PENSE_DATA && window.PENSE_DATA.database['brasil']);
+    const solCount = this.solitaries.length;
+    const solMajor = this.solitaries.filter(s => !s.isMinor).length;
+    const solMinor = this.solitaries.filter(s => s.isMinor).length;
+    const solGirls = this.solitaries.filter(s => s.gender === 'girl').length;
+    const solBoys = this.solitaries.filter(s => s.gender === 'boy').length;
+
+    let connCount = 0;
+    let connMajor = 0;
+    let connMinor = 0;
+    for (let g of this.groups) {
+      connCount += g.members.length;
+      for (let m of g.members) {
+        if (m.isMinor) connMinor++;
+        else connMajor++;
+      }
+    }
+
+    return {
+      scaleMode: this.params.scaleMode,
+      ratio: this.params.solitaryPerGroup,
+      locality: loc,
+      solitaryCount: solCount,
+      solitaryMajor: solMajor,
+      solitaryMinor: solMinor,
+      solitaryGirls: solGirls,
+      solitaryBoys: solBoys,
+      groupCount: this.groups.length,
+      connectedCount: connCount,
+      connectedMajor: connMajor,
+      connectedMinor: connMinor
+    };
   }
 }
 

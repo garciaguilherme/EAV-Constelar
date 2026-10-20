@@ -13,10 +13,21 @@ class CandleRenderer {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
 
+    // Cores ativas
+    this.bgColor = '#140916';
+    this.colors = {
+      connectedBoy: '#13f8fb',
+      connectedGirl: '#f87272',
+      solitaryBoy: '#8aeef0',
+      solitaryGirl: '#feb4b4'
+    };
+
     // Cache de sprites pré-renderizados
     this.sprites = {
-      boy: null,
-      girl: null,
+      boyConnected: null,
+      girlConnected: null,
+      boySolitary: null,
+      girlSolitary: null,
       spark: null
     };
 
@@ -39,83 +50,72 @@ class CandleRenderer {
   }
 
   /**
-   * Pré-renderiza sprites de alta fidelidade em offscreen canvases.
-   * Isso evita chamar createRadialGradient 60.000 vezes por segundo,
-   * permitindo que o navegador utilize texturas GPU aceleradas.
+   * Converte código hexadecimal (#RRGGBB ou #RGB) para objeto {r, g, b}.
    */
-  createOffscreenSprites() {
+  hexToRgb(hex) {
+    let c = (hex || '#ffffff').replace('#', '').trim();
+    if (c.length === 3) {
+      c = c.split('').map(x => x + x).join('');
+    }
+    const num = parseInt(c, 16);
+    return {
+      r: (num >> 16) & 255,
+      g: (num >> 8) & 255,
+      b: num & 255
+    };
+  }
+
+  /**
+   * Gera um sprite offscreen para qualquer cor hexadecimal selecionada em tempo real.
+   */
+  createCandleSprite(hex, isSolitary = false) {
     const size = 128;
     const center = size / 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const rgb = this.hexToRgb(hex);
 
-    // 1. Sprite Fogueira / Menino Conectado (Vela Amarela / Dourada)
-    const boyConnCanvas = document.createElement('canvas');
-    boyConnCanvas.width = size;
-    boyConnCanvas.height = size;
-    const bcCtx = boyConnCanvas.getContext('2d');
-    const bcGrad = bcCtx.createRadialGradient(center, center, 0, center, center, center);
-    bcGrad.addColorStop(0, 'rgba(255, 250, 205, 0.88)');      // Núcleo solar acolhedor
-    bcGrad.addColorStop(0.15, 'rgba(250, 204, 21, 0.76)');    // Chama viva amarela
-    bcGrad.addColorStop(0.38, 'rgba(234, 179, 8, 0.30)');     // Halo amarelo dourado suave
-    bcGrad.addColorStop(0.68, 'rgba(202, 138, 4, 0.08)');     // Borda suave âmbar
-    bcGrad.addColorStop(1.0, 'rgba(161, 98, 7, 0.0)');        // Desvanecimento no escuro
-    bcCtx.fillStyle = bcGrad;
-    bcCtx.beginPath();
-    bcCtx.arc(center, center, center, 0, Math.PI * 2);
-    bcCtx.fill();
-    this.sprites.boyConnected = boyConnCanvas;
+    // Núcleo incandescente e acolhedor (iluminado suavemente com branco)
+    const coreR = Math.min(255, Math.round(rgb.r * 0.42 + 255 * 0.58));
+    const coreG = Math.min(255, Math.round(rgb.g * 0.42 + 255 * 0.58));
+    const coreB = Math.min(255, Math.round(rgb.b * 0.42 + 255 * 0.58));
 
-    // 2. Sprite Fogueira / Menina Conectada (Vela Vermelha Rubra)
-    const girlConnCanvas = document.createElement('canvas');
-    girlConnCanvas.width = size;
-    girlConnCanvas.height = size;
-    const gcCtx = girlConnCanvas.getContext('2d');
-    const gcGrad = gcCtx.createRadialGradient(center, center, 0, center, center, center);
-    gcGrad.addColorStop(0, 'rgba(255, 225, 225, 0.88)');      // Núcleo incandescente suave
-    gcGrad.addColorStop(0.15, 'rgba(248, 113, 113, 0.76)');   // Chama rubra coral viva
-    gcGrad.addColorStop(0.38, 'rgba(239, 68, 68, 0.30)');     // Halo vermelho escarlate suave
-    gcGrad.addColorStop(0.68, 'rgba(185, 28, 28, 0.08)');     // Borda rubi profunda
-    gcGrad.addColorStop(1.0, 'rgba(153, 27, 27, 0.0)');       // Desvanecimento no escuro
-    gcCtx.fillStyle = gcGrad;
-    gcCtx.beginPath();
-    gcCtx.arc(center, center, center, 0, Math.PI * 2);
-    gcCtx.fill();
-    this.sprites.girlConnected = girlConnCanvas;
+    // Bordas mais densas e profundas
+    const edgeR = Math.max(0, Math.round(rgb.r * 0.70));
+    const edgeG = Math.max(0, Math.round(rgb.g * 0.70));
+    const edgeB = Math.max(0, Math.round(rgb.b * 0.70));
 
-    // 3. Sprite Menino Solitário (Esverdeado / Vela Verde Menta Atenuada)
-    const boySolCanvas = document.createElement('canvas');
-    boySolCanvas.width = size;
-    boySolCanvas.height = size;
-    const bsCtx = boySolCanvas.getContext('2d');
-    const bsGrad = bsCtx.createRadialGradient(center, center, 0, center, center, center);
-    bsGrad.addColorStop(0, 'rgba(220, 252, 231, 0.92)');     // Núcleo menta suave
-    bsGrad.addColorStop(0.15, 'rgba(134, 239, 172, 0.75)');   // Verde claro suave
-    bsGrad.addColorStop(0.40, 'rgba(34, 197, 94, 0.30)');    // Halo verde esmeralda atenuado
-    bsGrad.addColorStop(0.70, 'rgba(21, 128, 61, 0.08)');     // Borda atenuada
-    bsGrad.addColorStop(1.0, 'rgba(20, 83, 45, 0.0)');       // Desvanecimento no breu
-    bsCtx.fillStyle = bsGrad;
-    bsCtx.beginPath();
-    bsCtx.arc(center, center, center, 0, Math.PI * 2);
-    bsCtx.fill();
-    this.sprites.boySolitary = boySolCanvas;
+    const darkR = Math.max(0, Math.round(rgb.r * 0.45));
+    const darkG = Math.max(0, Math.round(rgb.g * 0.45));
+    const darkB = Math.max(0, Math.round(rgb.b * 0.45));
 
-    // 4. Sprite Menina Solitária (Roxo / Violeta Efémero Atenuado)
-    const girlSolCanvas = document.createElement('canvas');
-    girlSolCanvas.width = size;
-    girlSolCanvas.height = size;
-    const gsCtx = girlSolCanvas.getContext('2d');
-    const gsGrad = gsCtx.createRadialGradient(center, center, 0, center, center, center);
-    gsGrad.addColorStop(0, 'rgba(250, 232, 255, 0.92)');     // Núcleo lavanda suave
-    gsGrad.addColorStop(0.15, 'rgba(216, 180, 254, 0.75)');   // Violeta claro
-    gsGrad.addColorStop(0.40, 'rgba(168, 85, 247, 0.30)');    // Halo roxo crepuscular
-    gsGrad.addColorStop(0.70, 'rgba(126, 34, 206, 0.08)');    // Borda atenuada
-    gsGrad.addColorStop(1.0, 'rgba(88, 28, 135, 0.0)');       // Desvanecimento no breu
-    gsCtx.fillStyle = gsGrad;
-    gsCtx.beginPath();
-    gsCtx.arc(center, center, center, 0, Math.PI * 2);
-    gsCtx.fill();
-    this.sprites.girlSolitary = girlSolCanvas;
+    const grad = ctx.createRadialGradient(center, center, 0, center, center, center);
+    grad.addColorStop(0, `rgba(${coreR}, ${coreG}, ${coreB}, 0.94)`);
+    grad.addColorStop(0.15, `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.78)`);
+    grad.addColorStop(0.38, `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.30)`);
+    grad.addColorStop(0.68, `rgba(${edgeR}, ${edgeG}, ${edgeB}, 0.08)`);
+    grad.addColorStop(1.0, `rgba(${darkR}, ${darkG}, ${darkB}, 0.0)`);
 
-    // 5. Sprite Faísca (Micro-ember de interação com mouse)
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(center, center, center, 0, Math.PI * 2);
+    ctx.fill();
+
+    return canvas;
+  }
+
+  /**
+   * Pré-renderiza sprites de alta fidelidade em offscreen canvases.
+   */
+  createOffscreenSprites() {
+    this.sprites.boyConnected = this.createCandleSprite(this.colors.connectedBoy, false);
+    this.sprites.girlConnected = this.createCandleSprite(this.colors.connectedGirl, false);
+    this.sprites.boySolitary = this.createCandleSprite(this.colors.solitaryBoy, true);
+    this.sprites.girlSolitary = this.createCandleSprite(this.colors.solitaryGirl, true);
+
+    // Sprite Faísca (Micro-ember de interação com mouse)
     const sparkCanvas = document.createElement('canvas');
     sparkCanvas.width = 32;
     sparkCanvas.height = 32;
@@ -132,11 +132,37 @@ class CandleRenderer {
   }
 
   /**
-   * Limpa a tela com o tom escuro absoluto (#050507).
+   * Atualiza as cores customizadas em tempo real.
+   */
+  updateColors(newColors = {}) {
+    if (newColors.background) {
+      this.bgColor = newColors.background;
+      this.canvas.style.backgroundColor = newColors.background;
+    }
+    if (newColors.connectedBoy) {
+      this.colors.connectedBoy = newColors.connectedBoy;
+      this.sprites.boyConnected = this.createCandleSprite(newColors.connectedBoy, false);
+    }
+    if (newColors.connectedGirl) {
+      this.colors.connectedGirl = newColors.connectedGirl;
+      this.sprites.girlConnected = this.createCandleSprite(newColors.connectedGirl, false);
+    }
+    if (newColors.solitaryBoy) {
+      this.colors.solitaryBoy = newColors.solitaryBoy;
+      this.sprites.boySolitary = this.createCandleSprite(newColors.solitaryBoy, true);
+    }
+    if (newColors.solitaryGirl) {
+      this.colors.solitaryGirl = newColors.solitaryGirl;
+      this.sprites.girlSolitary = this.createCandleSprite(newColors.solitaryGirl, true);
+    }
+  }
+
+  /**
+   * Limpa a tela com o tom escuro configurado.
    */
   clear() {
     this.ctx.globalCompositeOperation = 'source-over';
-    this.ctx.fillStyle = '#050507';
+    this.ctx.fillStyle = this.bgColor || '#050507';
     this.ctx.fillRect(0, 0, this.width, this.height);
   }
 
@@ -157,8 +183,9 @@ class CandleRenderer {
    * @param {number} flicker - Multiplicador de tremor (R ± 4%)
    * @param {number} opacityMod - Modificador de opacidade para filtros
    * @param {number} hoverIntensity - Intensidade suave de hover do mouse (0.0 a 1.0)
+   * @param {boolean} isMinor - Se é ponto menor representando fração de 0,1%
    */
-  drawCandle(x, y, radius, gender, isSolitary = false, flicker = 1.0, opacityMod = 1.0, hoverIntensity = 0.0) {
+  drawCandle(x, y, radius, gender, isSolitary = false, flicker = 1.0, opacityMod = 1.0, hoverIntensity = 0.0, isMinor = false) {
     if (opacityMod <= 0.01) return;
 
     let sprite;
@@ -176,9 +203,10 @@ class CandleRenderer {
     const diameter = currentRadius * 2;
 
     // Solitários têm baseAlpha 0.65 (brilham suavemente).
-    // Fogueiras: moderado de 0.90 para 0.50 para que a sobreposição aditiva entre os pontos
-    // do cluster não aumente excessivamente a luminância nem sature em branco.
-    const baseAlpha = isSolitary ? 0.65 : 0.50;
+    // Pontos menores (0,1%) recebem nitidez sutil para destaque estelar.
+    const baseAlpha = isMinor 
+      ? (isSolitary ? 0.80 : 0.68)
+      : (isSolitary ? 0.65 : 0.50);
     const boostedAlpha = Math.min(1.0, baseAlpha + hover * 0.32);
 
     this.ctx.globalAlpha = Math.min(1.0, Math.max(0.04, boostedAlpha * flicker * opacityMod));

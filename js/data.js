@@ -1897,9 +1897,9 @@ const STUDENT_NARRATIVES = {
     "Menino, 15 anos — Sente que precisa usar uma máscara de indiferença para lidar com o isolamento."
   ],
   campfires: [
-    "Fogueira Coletiva — {count} estudantes reunidos: risadas no recreio, compartilhamento de lanches e cumplicidade juvenil.",
-    "Fogueira Mista — {count} amigos que se protegem mutuamente das inseguranças do cotidiano escolar.",
-    "Bando de {count} jovens — Pertencimento que dissipa o frio do corredor e traz calor às manhãs cinzentas.",
+    "Constelação Coletiva — {count} estudantes reunidos: risadas no recreio, compartilhamento de lanches e cumplicidade juvenil.",
+    "Constelação Mista — {count} amigos que se protegem mutuamente das inseguranças do cotidiano escolar.",
+    "Constelação de {count} jovens — Pertencimento que dissipa o frio do corredor e traz luz às manhãs cinzentas.",
     "Círculo de {count} amigos — A sensação acolhedora de existir nos olhos do outro e ter para onde voltar."
   ]
 };

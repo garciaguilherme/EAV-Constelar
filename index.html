@@ -3,19 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Velas na Escuridão — O Vazio e as Fogueiras Coletivas (PeNSE / IBGE)</title>
-  <meta name="description" content="Visualização poética e contemplativa sobre a solidão estudantil no Brasil baseada na PeNSE / IBGE. 1.000 focos de luz representam a dualidade entre o isolamento e o pertencimento coletivo.">
+  <title>Constelações — Mapa da solidão dos estudantes brasileiros (PeNSE / IBGE)</title>
+  <meta name="description" content="Visualização poética e contemplativa sobre a solidão estudantil no Brasil baseada na PeNSE / IBGE. Focos de luz representam a dualidade entre o isolamento e o pertencimento coletivo.">
 
   <!-- Google Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
   <!-- Canvas de Simulação Lumínica -->
   <canvas id="ambient-canvas"></canvas>
+
+  <!-- Botão Flutuante para Restaurar a Interface (quando oculta) -->
+  <button class="btn-show-ui" id="btn-show-ui" title="Mostrar Interface (ou pressione H)" aria-label="Mostrar Interface">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+    <span class="btn-text">Mostrar Interface</span>
+  </button>
 
   <!-- HUD Minimalista -->
   <header class="hud-top-left" id="hud-header">
@@ -23,8 +32,8 @@
       <span class="pulse-indicator"></span>
       <span>PeNSE / IBGE 2024 — SOLIDÃO ESTUDANTIL</span>
     </div>
-    <h1 class="main-title">Velas na Escuridão</h1>
-    <div class="subtitle">O Vazio e as Fogueiras Coletivas</div>
+    <h1 class="main-title">Constelações</h1>
+    <div class="subtitle">Mapa da solidão dos estudantes brasileiros</div>
 
     <!-- Menu de Seleção Territorial PeNSE -->
     <section class="geo-panel" id="geo-panel" aria-label="Seleção Territorial da Pesquisa">
@@ -68,198 +77,357 @@
 
     <div class="sample-metric">
       <span class="sample-dot"></span>
-      <span id="sample-metric-text">Amostra: <strong>1.000 estudantes</strong> (1 foco = 0,1 p.p. da população escolar)</span>
+      <span id="sample-metric-text">Legenda: 1 foco = 0,1 p.p. da população escolar</span>
     </div>
   </header>
 
-  <!-- Controles Superiores Direitos -->
-  <nav class="hud-top-right" aria-label="Controles da Simulação">
-    <div class="control-cluster">
-      <div class="filter-group" role="tablist" aria-label="Modo de Visualização">
-        <button class="filter-btn active" data-mode="all" role="tab" aria-selected="true" id="btn-mode-all">Todos</button>
-        <button class="filter-btn" data-mode="solitary" role="tab" aria-selected="false" id="btn-mode-solitary">Solitários (<span id="count-solitary-tab">62</span>)</button>
-        <button class="filter-btn" data-mode="groups" role="tab" aria-selected="false" id="btn-mode-groups">Fogueiras (<span id="count-groups-tab">6</span>)</button>
-        <button class="filter-btn" data-mode="girls" role="tab" aria-selected="false" id="btn-mode-girls">Meninas</button>
-        <button class="filter-btn" data-mode="boys" role="tab" aria-selected="false" id="btn-mode-boys">Meninos</button>
-      </div>
+  <!-- Controles Superiores Direitos (Hamburger Menu) -->
+  <nav class="hud-top-right" id="hud-top-right" aria-label="Controles da Simulação">
+    <button class="hamburger-btn" id="btn-hamburger" title="Abrir Menu de Controles" aria-label="Menu" aria-expanded="false">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
 
-      <div class="action-buttons">
-        <button class="icon-btn" id="btn-audio" title="Ativar Som Ambiente Contemplativo" aria-label="Som Ambiente">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path id="audio-icon-path" d="M11 5L6 9H2v6h4l5 4V5z M15.54 8.46a5 5 0 0 1 0 7.07 M19.07 4.93a10 10 0 0 1 0 14.14"/>
-            <line id="audio-mute-line" x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="1.8" />
-          </svg>
-          <span class="btn-text">Ambiente</span>
-        </button>
+    <div class="hamburger-dropdown" id="hamburger-dropdown" aria-hidden="true">
+      <div class="control-cluster">
+        <div class="filter-group" role="tablist" aria-label="Modo de Visualização">
+          <button class="filter-btn active" data-mode="all" role="tab" aria-selected="true" id="btn-mode-all">Todos</button>
+          <button class="filter-btn" data-mode="solitary" role="tab" aria-selected="false" id="btn-mode-solitary">Solitários (<span id="count-solitary-tab">62</span>)</button>
+          <button class="filter-btn" data-mode="groups" role="tab" aria-selected="false" id="btn-mode-groups">Constelações (<span id="count-groups-tab">6</span>)</button>
+          <button class="filter-btn" data-mode="girls" role="tab" aria-selected="false" id="btn-mode-girls">Meninas</button>
+          <button class="filter-btn" data-mode="boys" role="tab" aria-selected="false" id="btn-mode-boys">Meninos</button>
+        </div>
 
-        <button class="icon-btn" id="btn-pause" title="Pausar / Retomar Simulação" aria-label="Pausar Simulação">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect id="pause-rect-1" x="6" y="5" width="4" height="14" rx="1"/>
-            <rect id="pause-rect-2" x="14" y="5" width="4" height="14" rx="1"/>
-            <polygon id="play-polygon" points="6,4 20,12 6,20" fill="currentColor" style="display:none;"/>
-          </svg>
-          <span class="btn-text">Pausar</span>
-        </button>
+        <div class="action-buttons">
+          <button class="icon-btn" id="btn-audio" title="Ativar Som Ambiente Contemplativo" aria-label="Som Ambiente">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path id="audio-icon-path" d="M11 5L6 9H2v6h4l5 4V5z M15.54 8.46a5 5 0 0 1 0 7.07 M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <line id="audio-mute-line" x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="1.8" />
+            </svg>
+            <span class="btn-text">Ambiente</span>
+          </button>
 
-        <button class="icon-btn" id="btn-info" title="Sobre a Pesquisa e Conceito" aria-label="Informações">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="12" cy="12" r="9"/>
-            <line x1="12" y1="16" x2="12" y2="12"/>
-            <circle cx="12" cy="8" r="0.8" fill="currentColor"/>
-          </svg>
-          <span class="btn-text">Sobre</span>
-        </button>
+          <button class="icon-btn" id="btn-pause" title="Pausar / Retomar Simulação" aria-label="Pausar Simulação">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect id="pause-rect-1" x="6" y="5" width="4" height="14" rx="1"/>
+              <rect id="pause-rect-2" x="14" y="5" width="4" height="14" rx="1"/>
+              <polygon id="play-polygon" points="6,4 20,12 6,20" fill="currentColor" style="display:none;"/>
+            </svg>
+            <span class="btn-text">Pausar</span>
+          </button>
+
+          <button class="icon-btn" id="btn-customizer" title="Personalizar Parâmetros da Visualização" aria-label="Personalizar Parâmetros">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <line x1="4" y1="21" x2="4" y2="14"/>
+              <line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/>
+              <line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/>
+              <line x1="9" y1="8" x2="15" y2="8"/>
+              <line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+            <span class="btn-text">Ajustes</span>
+          </button>
+
+          <button class="icon-btn" id="btn-hide-ui" title="Ocultar Toda a Interface" aria-label="Ocultar Interface">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+            <span class="btn-text">Ocultar UI</span>
+          </button>
+        </div>
       </div>
     </div>
   </nav>
 
-  <!-- Legenda Lumínica e Estatísticas (Inferior Esquerdo) -->
+  <!-- Legenda Lumínica Minimalista (Inferior Esquerdo) -->
   <footer class="hud-bottom-left" id="hud-legend">
     <div class="legend-panel">
-      <div class="legend-title">LEGENDA LUMÍNICA & DINÂMICA</div>
+      <div class="legend-title">LEGENDA</div>
       <div class="legend-items">
         <div class="legend-item" id="legend-bonfires">
           <div class="luminary-dot bonfire-glow"></div>
           <div class="legend-desc">
-            <span class="name" id="legend-bonfires-title">Fogueiras Coletivas (6 grupos • 938 focos)</span>
-            <span class="meta">Amigos conectados: Meninos (Amarelo) e Meninas (Vermelha)</span>
+            <span class="name" id="legend-bonfires-title">Constelações</span>
           </div>
         </div>
 
         <div class="legend-item" id="legend-solitary-girls">
           <div class="luminary-dot solitary-girl-glow"></div>
           <div class="legend-desc">
-            <span class="name" id="legend-solitary-girls-title">Meninas Solitárias (29 focos — Luz Roxa)</span>
-            <span class="meta">Brilho atenuado com rastro de cometa pelo isolamento escolar</span>
+            <span class="name" id="legend-solitary-girls-title">Meninas Solitárias</span>
           </div>
         </div>
 
         <div class="legend-item" id="legend-solitary-boys">
           <div class="luminary-dot solitary-boy-glow"></div>
           <div class="legend-desc">
-            <span class="name" id="legend-solitary-boys-title">Meninos Solitários (33 focos — Luz Esverdeada)</span>
-            <span class="meta">Brilho atenuado com rastro de cometa pelo isolamento escolar</span>
+            <span class="name" id="legend-solitary-boys-title">Meninos Solitários</span>
           </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="dynamics-info">
-        <div class="dynamic-col">
-          <div class="dynamic-badge isolated-badge" id="badge-isolated">
-            <span class="dot-preview" style="background: #c084fc; box-shadow: 0 0 6px #c084fc;"></span>
-            <span class="dot-preview" style="background: #86efac; box-shadow: 0 0 6px #86efac;"></span>
-            <strong id="badge-solitary-text">62 Solitários (6,1%)</strong>
-          </div>
-          <p class="caption" id="badge-solitary-sub">Luzes roxa e esverdeada com rastro de cometa no escuro</p>
-        </div>
-
-        <div class="dynamic-col">
-          <div class="dynamic-badge collective-badge" id="badge-collective">
-            <span class="bonfire-preview"></span>
-            <strong id="badge-collective-text">6 Fogueiras (938 focos)</strong>
-          </div>
-          <p class="caption" id="badge-collective-sub">Fusão lumínica: meninos (amarelo) e meninas (vermelho)</p>
         </div>
       </div>
     </div>
   </footer>
 
-  <!-- Dica de Interação e Razão Estrutural (Inferior Direito) -->
-  <aside class="hud-bottom-right" id="hud-ratio">
-    <div class="ratio-card">
-      <div class="ratio-label">REGRA ESTRUTURAL</div>
-      <div class="ratio-value" id="ratio-display">1 Fogueira : 10 Solitários</div>
-      <div class="ratio-detail" id="ratio-detail-text">6 fogueiras sustentam o calor coletivo para 62 solitários</div>
-      <div class="interaction-hint">
-        <span class="spark-icon">✦</span>
-        <span>Clique e arraste qualquer vela ou fogueira para movê-la • Clique no vazio para emitir uma onda de luz</span>
+  <!-- Tooltip de Inspeção Lumínica Minimalista -->
+  <div class="luminary-tooltip" id="tooltip" aria-hidden="true">
+    <div class="tooltip-header">
+      <span class="tooltip-dot" id="tooltip-dot"></span>
+      <span class="tooltip-type" id="tooltip-type">Menina Solitária</span>
+    </div>
+    <div class="tooltip-body" id="tooltip-body"></div>
+    <div class="tooltip-footer" id="tooltip-footer"></div>
+  </div>
+
+  <!-- Painel Lateral de Ajustes e Customização em Tempo Real -->
+  <aside class="customizer-panel" id="customizer-panel" aria-hidden="true">
+    <div class="customizer-card">
+      <div class="customizer-header">
+        <div>
+          <div class="customizer-badge">CUSTOMIZAÇÃO EM TEMPO REAL</div>
+          <h2 class="customizer-title">Ajustes da Visualização</h2>
+          <p class="customizer-subtitle">Adapte dinamicamente luzes, velocidades, escalas e paleta</p>
+        </div>
+        <button class="customizer-close" id="customizer-close" aria-label="Fechar painel de ajustes">&times;</button>
+      </div>
+
+      <div class="customizer-body">
+        <!-- 1. Toggle do Modo de Escala da Proporção -->
+        <section class="customizer-section">
+          <div class="section-label-row">
+            <span class="section-tag">MODO DE ESCALA</span>
+            <span class="section-badge-active" id="badge-active-scale">1 foco = 0,1%</span>
+          </div>
+          <label class="customizer-label">Proporção dos Pontos de Luz</label>
+          <div class="scale-mode-toggle" role="radiogroup" aria-label="Modo de Escala de Proporção">
+            <button class="scale-toggle-btn active" data-scale="tenth" id="toggle-scale-tenth" role="radio" aria-checked="true">
+              <span class="scale-btn-title">1 ponto = 0,1%</span>
+              <span class="scale-btn-desc">1.000 focos totais (Amostra 100%)</span>
+            </button>
+            <button class="scale-toggle-btn" data-scale="percent" id="toggle-scale-percent" role="radio" aria-checked="false">
+              <span class="scale-btn-title">1 ponto = 1% + menores 0,1%</span>
+              <span class="scale-btn-desc">1% inteiro + centelhas decimais</span>
+            </button>
+          </div>
+          <p class="customizer-help-text" id="scale-mode-help-text">
+            No modo padrão, cada ponto representa 0,1 ponto percentual da população escolar (totalizando exatamente 1.000 focos de luz).
+          </p>
+        </section>
+
+        <!-- 2. Proporção de Constelações para Solitários -->
+        <section class="customizer-section">
+          <div class="slider-row-header">
+            <label class="customizer-label" for="slider-ratio">Proporção Constelações : Solitários</label>
+            <span class="slider-val" id="val-ratio">1 : 25</span>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="slider-ratio" min="2" max="35" step="1" value="25">
+          </div>
+          <p class="customizer-help-text">
+            1 constelação coletiva é gerada para cada <strong id="val-ratio-help">25</strong> estudantes solitários.
+          </p>
+        </section>
+
+        <!-- 3. Tamanho dos Pontos de Luz (para cada tipo de indivíduo) -->
+        <section class="customizer-section">
+          <div class="section-label-row">
+            <span class="section-tag">DIMENSÕES LUMÍNICAS</span>
+            <span class="section-sub-tag">Raio em Pixels</span>
+          </div>
+          
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <span class="type-indicator dot-solitary-girl"></span>
+              <label for="slider-size-sol-girl">Meninas Solitárias</label>
+              <span class="slider-val" id="val-size-sol-girl">8px</span>
+            </div>
+            <input type="range" id="slider-size-sol-girl" min="4" max="45" step="1" value="8">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <span class="type-indicator dot-solitary-boy"></span>
+              <label for="slider-size-sol-boy">Meninos Solitários</label>
+              <span class="slider-val" id="val-size-sol-boy">8px</span>
+            </div>
+            <input type="range" id="slider-size-sol-boy" min="4" max="45" step="1" value="8">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <span class="type-indicator dot-conn-girl"></span>
+              <label for="slider-size-conn-girl">Meninas Conectadas (Constelações)</label>
+              <span class="slider-val" id="val-size-conn-girl">15px</span>
+            </div>
+            <input type="range" id="slider-size-conn-girl" min="4" max="45" step="1" value="15">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <span class="type-indicator dot-conn-boy"></span>
+              <label for="slider-size-conn-boy">Meninos Conectados (Constelações)</label>
+              <span class="slider-val" id="val-size-conn-boy">15px</span>
+            </div>
+            <input type="range" id="slider-size-conn-boy" min="4" max="45" step="1" value="15">
+          </div>
+
+          <div class="slider-item" id="item-size-minor">
+            <div class="slider-row-header">
+              <span class="type-indicator dot-minor"></span>
+              <label for="slider-size-minor">Pontos Menores (Frações 0,1%)</label>
+              <span class="slider-val" id="val-size-minor">4px</span>
+            </div>
+            <input type="range" id="slider-size-minor" min="2" max="20" step="1" value="4">
+          </div>
+        </section>
+
+        <!-- 4. Velocidade dos Pontos (para cada) -->
+        <section class="customizer-section">
+          <div class="section-label-row">
+            <span class="section-tag">CINEMÁTICA & FLUXO</span>
+            <span class="section-sub-tag">Multiplicadores</span>
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <label for="slider-speed-solitary">Velocidade: Estudantes Solitários</label>
+              <span class="slider-val" id="val-speed-solitary">0.5x</span>
+            </div>
+            <input type="range" id="slider-speed-solitary" min="0.1" max="3.0" step="0.1" value="0.5">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <label for="slider-speed-group">Velocidade: Constelações (Deslocamento)</label>
+              <span class="slider-val" id="val-speed-group">1.5x</span>
+            </div>
+            <input type="range" id="slider-speed-group" min="0.1" max="3.0" step="0.1" value="1.5">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-row-header">
+              <label for="slider-speed-orbit">Velocidade: Rotação de Órbitas</label>
+              <span class="slider-val" id="val-speed-orbit">1.0x</span>
+            </div>
+            <input type="range" id="slider-speed-orbit" min="0.1" max="3.0" step="0.1" value="1.0">
+          </div>
+        </section>
+
+        <!-- 5. Cores (Elementos e Fundo) -->
+        <section class="customizer-section">
+          <div class="section-label-row">
+            <span class="section-tag">PALETA CROMÁTICA</span>
+            <span class="section-sub-tag">GPU Shaders</span>
+          </div>
+
+          <div class="color-picker-grid">
+            <div class="color-picker-card">
+              <span class="color-picker-title">Fundo (Vazio)</span>
+              <div class="color-picker-input-wrap">
+                <input type="color" id="color-bg" value="#140916">
+                <span class="color-hex-tag" id="tag-color-bg">#140916</span>
+              </div>
+            </div>
+
+            <div class="color-picker-card">
+              <span class="color-picker-title">Menina Solitária</span>
+              <div class="color-picker-input-wrap">
+                <input type="color" id="color-sol-girl" value="#feb4b4">
+                <span class="color-hex-tag" id="tag-color-sol-girl">#feb4b4</span>
+              </div>
+            </div>
+
+            <div class="color-picker-card">
+              <span class="color-picker-title">Menino Solitário</span>
+              <div class="color-picker-input-wrap">
+                <input type="color" id="color-sol-boy" value="#8aeef0">
+                <span class="color-hex-tag" id="tag-color-sol-boy">#8aeef0</span>
+              </div>
+            </div>
+
+            <div class="color-picker-card">
+              <span class="color-picker-title">Menina Conectada</span>
+              <div class="color-picker-input-wrap">
+                <input type="color" id="color-conn-girl" value="#f87272">
+                <span class="color-hex-tag" id="tag-color-conn-girl">#f87272</span>
+              </div>
+            </div>
+
+            <div class="color-picker-card">
+              <span class="color-picker-title">Menino Conectado</span>
+              <div class="color-picker-input-wrap">
+                <input type="color" id="color-conn-boy" value="#13f8fb">
+                <span class="color-hex-tag" id="tag-color-conn-boy">#13f8fb</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. Exportar e Usar Configuração (Código) -->
+        <section class="customizer-section config-share-section">
+          <div class="section-label-row">
+            <span class="section-tag">COMPARTILHAR & IMPORTAR</span>
+            <span class="section-sub-tag">Código JSON</span>
+          </div>
+
+          <!-- Ação 1: Exportar Configuração -->
+          <div class="config-block">
+            <button class="btn-export-config" id="btn-export-config" type="button" title="Gerar código e copiar para a área de transferência">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Exportar Configuração</span>
+            </button>
+            <div class="config-feedback" id="export-feedback" aria-live="polite"></div>
+          </div>
+
+          <!-- Ação 2: Área de Usar Configuração -->
+          <div class="config-block import-block">
+            <label class="customizer-label" for="config-code-input">Usar Configuração</label>
+            <p class="customizer-help-text">Cole aqui o código gerado para aplicar instantaneamente:</p>
+            <div class="config-textarea-wrap">
+              <textarea id="config-code-input" class="config-textarea" placeholder="Cole o código de configuração aqui..." rows="3" spellcheck="false"></textarea>
+            </div>
+            <div class="import-actions-row">
+              <button class="btn-import-config" id="btn-import-config" type="button">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Aplicar Configuração</span>
+              </button>
+              <button class="btn-clear-config" id="btn-clear-config" type="button" title="Limpar campo">
+                Limpar
+              </button>
+            </div>
+            <div class="config-feedback" id="import-feedback" aria-live="polite"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Rodapé com Botão de Restauração -->
+      <div class="customizer-footer">
+        <button class="btn-reset-params" id="btn-reset-params" title="Restaurar valores padrão da pesquisa">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>Restaurar Padrões da PeNSE</span>
+        </button>
       </div>
     </div>
   </aside>
 
-  <!-- Tooltip de Inspeção Lumínica -->
-  <div class="luminary-tooltip" id="tooltip" aria-hidden="true">
-    <div class="tooltip-header">
-      <span class="tooltip-dot" id="tooltip-dot"></span>
-      <span class="tooltip-type" id="tooltip-type">Estudante Solitária</span>
-    </div>
-    <div class="tooltip-body" id="tooltip-body">
-      Menina, 15 anos — relata sentir-se só na maior parte do tempo.
-    </div>
-    <div class="tooltip-footer" id="tooltip-footer">
-      Distância do grupo mais próximo: 120px
-    </div>
-  </div>
-
-  <!-- Modal "Sobre o Projeto e PeNSE" -->
-  <div class="modal-backdrop" id="info-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
-    <div class="modal-card">
-      <button class="modal-close" id="modal-close" aria-label="Fechar">&times;</button>
-      
-      <div class="modal-tag">CONTEXTO METODOLÓGICO & POÉTICO</div>
-      <h2 class="modal-title" id="modal-title">O Vazio e as Fogueiras Coletivas</h2>
-      
-      <div class="modal-content">
-        <section class="modal-section">
-          <h3>Conceito Visual & Fusão Lumínica</h3>
-          <p>
-            Nesta visualização, estudantes não são abstrações numéricas ou ícones geométricos frios, mas <strong>chamas expostas à escuridão</strong>.
-            Utilizando o algoritmo de <em>mistura aditiva de luz</em> (<code>lighter</code>), os jovens que possuem laços de amizade caminham juntos, sobrepondo seus halos até criar fogueiras densas e acolhedoras.
-          </p>
-          <p>
-            Onde rapazes (vela amarela) e moças (vela vermelha) convivem em fogueiras, os tons fundem-se organicamente em calor alaranjado e dourado incandescente. Já os estudantes sem amigos vagam à margem com sua luz própria e rastro de cometa: rapazes em tom esverdeado e moças em tom roxo.
-          </p>
-        </section>
-
-        <section class="modal-section highlight-section">
-          <h3>Dados Oficiais: PeNSE 2024 (IBGE)</h3>
-          <p>
-            Com base nas <strong>Tabelas 12.1.1 e 12.1.3</strong> da <em>Pesquisa Nacional de Saúde do Escolar (PeNSE 2024 / IBGE)</em>:
-            <em>Percentual de escolares de 13 a 17 anos que não têm amigos próximos</em>, investigado segundo Sexo e Dependência Administrativa da Escola, para todo o Brasil, Regiões, UFs e Municípios das Capitais.
-          </p>
-          <div class="modal-stats-grid">
-            <div class="stat-box">
-              <span class="stat-number" id="modal-stat-total">6,1%</span>
-              <span class="stat-label">Taxa Brasil (Sem Amigos)</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-number">1 : 10</span>
-              <span class="stat-label">Razão Fogueiras : Solitários</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-number">60</span>
-              <span class="stat-label">Localidades Mapeadas</span>
-            </div>
-          </div>
-          <p class="stat-footnote">
-            A pesquisa revela disparidades expressivas: nas escolas públicas, a taxa nacional é de <strong>6,3%</strong> versus <strong>3,4%</strong> nas escolas privadas. No recorte por capitais, cidades como Salvador (6,8%) e Boa Vista (6,7%) registram as maiores proporções de isolamento.
-          </p>
-        </section>
-
-        <section class="modal-section">
-          <h3>Cinemática do Evitamento Social</h3>
-          <p>
-            Os solitários desta simulação possuem uma <strong>força de repulsão sutil</strong> ao redor de grupos. Quando uma fogueira se aproxima, o estudante solitário desvia seu olhar e seu rumo, contornando a luz alheia pelo escuro — uma representação sensorial da inibição social e do abismo invisível entre quem pertence e quem vagueia à margem.
-          </p>
-          <p>
-            Da mesma forma, <strong>solitários repelem suavemente outros solitários</strong> ao se aproximarem (pequeno raio de ~38px): suas chamas deslizam tangencialmente sem se fundir, preservando a individualidade e a barreira invisível que impede a formação espontânea de novos laços.
-          </p>
-        </section>
-      </div>
-
-      <div class="modal-action-row">
-        <button class="btn-primary" id="btn-modal-close-action">Voltar à Contemplação</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Scripts -->
-  <script src="js/audio.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/renderer.js"></script>
-  <script src="js/simulation.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/audio.js?v=9"></script>
+  <script src="js/data.js?v=9"></script>
+  <script src="js/renderer.js?v=9"></script>
+  <script src="js/simulation.js?v=9"></script>
+  <script src="js/main.js?v=9"></script>
 </body>
 </html>
