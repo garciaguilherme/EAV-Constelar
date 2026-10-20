@@ -566,7 +566,7 @@ class CandleSimulation {
           if (!this.touchingSolitaries.has(solitaryPairKey)) {
             this.touchingSolitaries.add(solitaryPairKey);
             const now = performance.now();
-            if (window.soundscape && window.soundscape.isPlaying && (now - this.lastSolitaryAudioTime > 180)) {
+            if (window.soundscape && window.soundscape.isPlaying && (now - this.lastSolitaryAudioTime > 240)) {
               this.lastSolitaryAudioTime = now;
               const relSpeed = Math.hypot(s1.vx - s2.vx, s1.vy - s2.vy);
               const intensity = Math.min(1.4, Math.max(0.5, relSpeed * 2.8 + (s1Dragged || s2Dragged ? 0.35 : 0)));

@@ -16,6 +16,7 @@ class AmbientSoundscape {
     this.ambientFilter = null;
     this.lfo = null;
     this.touchChordIndex = 0;
+    this.solitaryChordIndex = 0;
   }
 
   init() {
@@ -26,7 +27,17 @@ class AmbientSoundscape {
     // 1. Master Gain
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.setValueAtTime(1.0, this.ctx.currentTime);
-    this.masterGain.connect(this.ctx.destination);
+
+    // Compressor suave para garantir calor aveludado e evitar distorção/clipping
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.setValueAtTime(-14, this.ctx.currentTime);
+    this.compressor.knee.setValueAtTime(25, this.ctx.currentTime);
+    this.compressor.ratio.setValueAtTime(3.5, this.ctx.currentTime);
+    this.compressor.attack.setValueAtTime(0.006, this.ctx.currentTime);
+    this.compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
+
+    this.masterGain.connect(this.compressor);
+    this.compressor.connect(this.ctx.destination);
 
     // 2. Barramento de Efeitos Sonoros (SFX)
     this.sfxGain = this.ctx.createGain();
@@ -128,8 +139,8 @@ class AmbientSoundscape {
   }
 
   /**
-   * Som suave, luminoso e etéreo para o toque entre as Constelações.
-   * Acorde celestial em Ré Menor (Dm) com sobretons cristalinos e decaimento aveludado.
+   * Som de Órgão Celestial (Flauta / Registros superiores) para o toque entre Constelações.
+   * Acorde aveludado em Ré Menor (Dm) com sobretons de flauta de órgão e decaimento quente (~2.5s).
    * @param {number} intensity - Força do toque (0.5 a 1.5)
    * @param {number} panX - Posição horizontal normalizada (0.0 a 1.0) para espacialização
    */
@@ -139,33 +150,47 @@ class AmbientSoundscape {
       this.ensureContext();
 
       const now = this.ctx.currentTime;
-      const clampedIntensity = Math.min(1.5, Math.max(0.5, intensity));
+      const clampedIntensity = Math.min(1.4, Math.max(0.45, intensity));
 
-      // Voicings celestiais do acorde de Dm (D, F, A, C, E) em oitavas superiores
+      // Voicings celestiais de flauta de órgão em Ré Menor (D, F, A, C)
       const voicings = [
-        [293.66, 440.00, 587.33], // D4, A4, D5 (pureza harmônica)
-        [349.23, 523.25, 698.46], // F4, C5, F5 (terça menor luminosa)
-        [440.00, 659.25, 880.00], // A4, E5, A5 (quinta com nona celestial)
-        [587.33, 698.46, 880.00]  // D5, F5, A5 (tríade celestial completa de Dm)
+        [
+          { freq: 220.00, type: 'sine', gain: 0.026, detune: -1.5 }, // A3
+          { freq: 293.66, type: 'triangle', gain: 0.022, detune: 1.8 }, // D4
+          { freq: 349.23, type: 'sine', gain: 0.019, detune: -2.1 }, // F4
+          { freq: 440.00, type: 'sine', gain: 0.015, detune: 1.6 }   // A4
+        ],
+        [
+          { freq: 174.61, type: 'sine', gain: 0.028, detune: 1.5 },  // F3
+          { freq: 261.63, type: 'triangle', gain: 0.022, detune: -1.7 }, // C4
+          { freq: 349.23, type: 'sine', gain: 0.018, detune: 2.0 }, // F4
+          { freq: 523.25, type: 'sine', gain: 0.014, detune: -1.8 }  // C5
+        ],
+        [
+          { freq: 146.83, type: 'sine', gain: 0.028, detune: -1.8 }, // D3
+          { freq: 220.00, type: 'triangle', gain: 0.024, detune: 1.6 }, // A3
+          { freq: 293.66, type: 'sine', gain: 0.020, detune: -2.0 }, // D4
+          { freq: 440.00, type: 'sine', gain: 0.016, detune: 2.2 }   // A4
+        ]
       ];
 
       this.touchChordIndex = (this.touchChordIndex + 1) % voicings.length;
-      const notes = voicings[this.touchChordIndex];
+      const chord = voicings[this.touchChordIndex];
 
       // Panning estéreo suave baseado na posição X da tela
       let panner = null;
       if (typeof this.ctx.createStereoPanner === 'function') {
         panner = this.ctx.createStereoPanner();
-        const panValue = Math.max(-0.7, Math.min(0.7, (panX - 0.5) * 1.4));
+        const panValue = Math.max(-0.7, Math.min(0.7, (panX - 0.5) * 1.35));
         panner.pan.setValueAtTime(panValue, now);
         panner.connect(this.sfxGain);
       }
 
-      // Filtro quente para eliminar qualquer aresta aguda do sino cósmico
+      // Filtro quente e musical eliminando arestas agudas para timbre de flauta de órgão
       const touchFilter = this.ctx.createBiquadFilter();
       touchFilter.type = 'lowpass';
-      touchFilter.frequency.setValueAtTime(1600, now);
-      touchFilter.Q.setValueAtTime(0.8, now);
+      touchFilter.frequency.setValueAtTime(750, now);
+      touchFilter.Q.setValueAtTime(1.1, now);
 
       if (panner) {
         touchFilter.connect(panner);
@@ -173,28 +198,30 @@ class AmbientSoundscape {
         touchFilter.connect(this.sfxGain);
       }
 
-      notes.forEach((freq, idx) => {
+      const totalDuration = 2.6;
+
+      chord.forEach((pipe, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
+        osc.type = pipe.type;
+        osc.frequency.setValueAtTime(pipe.freq, now);
+        osc.detune.setValueAtTime(pipe.detune, now);
 
-        // Micro delay de ataque entre as notas (arpejo sutil de 25ms)
-        const noteDelay = idx * 0.025;
+        const noteDelay = idx * 0.035; // Leve arpejo de sopro
         const startTime = now + noteDelay;
+        const targetGain = pipe.gain * clampedIntensity;
 
-        // Ataque suave sem cliques (40ms) e decaimento expansivo de ~1.8s
-        const noteGain = (0.038 / (idx * 0.3 + 1)) * clampedIntensity;
-        gain.gain.setValueAtTime(0.0001, startTime);
-        gain.gain.exponentialRampToValueAtTime(noteGain, startTime + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.00001, startTime + 1.8);
+        gain.gain.setValueAtTime(0.00001, startTime);
+        gain.gain.exponentialRampToValueAtTime(targetGain, startTime + 0.07);
+        gain.gain.setValueAtTime(targetGain, startTime + 0.9);
+        gain.gain.exponentialRampToValueAtTime(0.00001, startTime + totalDuration);
 
         osc.connect(gain);
         gain.connect(touchFilter);
 
         osc.start(startTime);
-        osc.stop(startTime + 1.9);
+        osc.stop(startTime + totalDuration + 0.1);
       });
     } catch (err) {
       console.warn('Erro ao reproduzir toque de constelações:', err);
@@ -202,9 +229,10 @@ class AmbientSoundscape {
   }
 
   /**
-   * Som mais baixo e mais triste para o choque dos estudantes solitários.
-   * Registro grave em Ré Menor (Dm), com ênfase na terça menor melancólica (Fá)
-   * e timbre aveludado/opaco de violoncelo abafado na escuridão.
+   * Som de Órgão Sacro/Ambiental para o choque entre elementos.
+   * Acorde grave e ressonante de órgão de tubos (pedaleira sub-grave 16' e 8', quinta e terça menor em Ré Menor - Dm),
+   * perfeitamente afinado com a ambiência contínua, com ataque de sopro de ar suave (~90ms),
+   * corpo majestoso e longa cauda de reverberação de catedral (~3.5 a 4.0 segundos).
    * @param {number} intensity - Intensidade do choque (0.5 a 1.5)
    * @param {number} panX - Posição horizontal normalizada (0.0 a 1.0)
    */
@@ -214,59 +242,97 @@ class AmbientSoundscape {
       this.ensureContext();
 
       const now = this.ctx.currentTime;
-      const clampedIntensity = Math.min(1.4, Math.max(0.4, intensity));
+      const clampedIntensity = Math.min(1.4, Math.max(0.45, intensity));
 
-      // Espacialização estéreo sutil
+      // Espacialização estéreo suave baseada no ponto de choque
       let panner = null;
       if (typeof this.ctx.createStereoPanner === 'function') {
         panner = this.ctx.createStereoPanner();
-        const panValue = Math.max(-0.7, Math.min(0.7, (panX - 0.5) * 1.4));
+        const panValue = Math.max(-0.7, Math.min(0.7, (panX - 0.5) * 1.35));
         panner.pan.setValueAtTime(panValue, now);
         panner.connect(this.sfxGain);
       }
 
-      // Filtro passa-baixas fechado e ressonante para dar o caráter oco, distante e abafado
-      const solitaryFilter = this.ctx.createBiquadFilter();
-      solitaryFilter.type = 'lowpass';
-      solitaryFilter.frequency.setValueAtTime(220, now);
-      solitaryFilter.Q.setValueAtTime(2.2, now);
+      // Filtro passa-baixas quente para dar a textura de madeira/ar de tubos de órgão
+      // Em harmonia tonal com o filtro da ambiência (285Hz)
+      const organFilter = this.ctx.createBiquadFilter();
+      organFilter.type = 'lowpass';
+      organFilter.frequency.setValueAtTime(360, now);
+      organFilter.Q.setValueAtTime(1.4, now);
 
       if (panner) {
-        solitaryFilter.connect(panner);
+        organFilter.connect(panner);
       } else {
-        solitaryFilter.connect(this.sfxGain);
+        organFilter.connect(this.sfxGain);
       }
 
-      // Notas fundamentais graves de Ré Menor:
-      // D3 (146.83Hz) com a terça menor melancólica F3 (174.61Hz) e sub-grave de D2 (73.42Hz)
-      const tones = [
-        { freq: 146.83, type: 'triangle', gain: 0.022, decay: 1.1 }, // Ré grave (corpo oco)
-        { freq: 174.61, type: 'sine',     gain: 0.018, decay: 0.95 }, // Fá menor (a dor melancólica da solidão)
-        { freq: 73.42,  type: 'sine',     gain: 0.015, decay: 0.85 }  // Sub-Ré (peso e vazio)
+      // Voicings de Órgão Sacro em Ré Menor (Dm) com pedaleiras bem graves:
+      // Frequências fundamentais: D1 (36.71Hz), A1 (55.00Hz), D2 (73.42Hz), F2 (87.31Hz), A2 (110.00Hz), D3 (146.83Hz), F3 (174.61Hz)
+      const voicings = [
+        // 1. Órgão Dm Fundamental Profundo (Pedaleira Sub-D1 16' + D2 8' + Quinta A2 + Oitava D3 + Terça F3)
+        [
+          { freq: 36.71, type: 'sine',     gain: 0.040, detune: 0 },
+          { freq: 73.42, type: 'triangle', gain: 0.034, detune: -1.8 },
+          { freq: 110.00, type: 'sine',    gain: 0.026, detune: 1.6 },
+          { freq: 146.83, type: 'triangle',gain: 0.022, detune: -2.2 },
+          { freq: 174.61, type: 'sine',    gain: 0.024, detune: 2.1 }
+        ],
+        // 2. Órgão Dm7 Contemplativo (Pedal Quinta A1 + Pedaleira D2 + Sétima C3 + Terça F3)
+        [
+          { freq: 55.00, type: 'sine',     gain: 0.038, detune: 0 },
+          { freq: 73.42, type: 'triangle', gain: 0.032, detune: 2.0 },
+          { freq: 110.00, type: 'sine',    gain: 0.025, detune: -1.7 },
+          { freq: 130.81, type: 'triangle',gain: 0.020, detune: 1.8 },
+          { freq: 174.61, type: 'sine',    gain: 0.024, detune: -1.9 }
+        ],
+        // 3. Órgão Dm9 Noturno (Sub-pedal D1 + Terça grave F2 + Quinta A2 + Nona suave E3)
+        [
+          { freq: 36.71, type: 'sine',     gain: 0.040, detune: 0 },
+          { freq: 87.31, type: 'triangle', gain: 0.028, detune: -1.6 },
+          { freq: 110.00, type: 'sine',    gain: 0.024, detune: 2.3 },
+          { freq: 146.83, type: 'triangle',gain: 0.020, detune: -1.8 },
+          { freq: 164.81, type: 'sine',    gain: 0.018, detune: 1.5 }
+        ],
+        // 4. Órgão Dm Pleno de Catedral (D1 + D2 + A2 + D3 + F3 + A3)
+        [
+          { freq: 36.71, type: 'sine',     gain: 0.036, detune: 0 },
+          { freq: 73.42, type: 'triangle', gain: 0.030, detune: 2.1 },
+          { freq: 110.00, type: 'sine',    gain: 0.024, detune: -2.0 },
+          { freq: 146.83, type: 'triangle',gain: 0.020, detune: 1.7 },
+          { freq: 174.61, type: 'sine',    gain: 0.022, detune: -1.5 },
+          { freq: 220.00, type: 'sine',    gain: 0.014, detune: 2.3 }
+        ]
       ];
 
-      tones.forEach((tone) => {
+      this.solitaryChordIndex = (this.solitaryChordIndex + 1) % voicings.length;
+      const chord = voicings[this.solitaryChordIndex];
+
+      // Duração ampla: ataque de ar de ~90ms, corpo ressonante de ~1.2s e cauda de 3.6s
+      const totalDuration = 3.6;
+
+      chord.forEach((pipe) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
-        osc.type = tone.type;
-        osc.frequency.setValueAtTime(tone.freq, now);
+        osc.type = pipe.type;
+        osc.frequency.setValueAtTime(pipe.freq, now);
+        osc.detune.setValueAtTime(pipe.detune, now);
 
-        // Micro inflexão descendente (inflexão de lamento / tristeza sutil de ~15 cents)
-        osc.frequency.exponentialRampToValueAtTime(tone.freq * 0.985, now + 0.35);
+        const targetGain = pipe.gain * clampedIntensity;
 
-        const targetGain = tone.gain * clampedIntensity;
+        // Ataque de sopro de tubo de órgão (sem clique percussivo, entrada gradual suave)
+        gain.gain.setValueAtTime(0.00001, now);
+        gain.gain.exponentialRampToValueAtTime(targetGain, now + 0.09);
 
-        // Ataque suave (16ms) e decaimento lento opaco
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(targetGain, now + 0.016);
-        gain.gain.exponentialRampToValueAtTime(0.00001, now + tone.decay);
+        // Sustentação do corpo do acorde de órgão antes da cauda de reverberação
+        gain.gain.setValueAtTime(targetGain, now + 1.2);
+        gain.gain.exponentialRampToValueAtTime(0.00001, now + totalDuration);
 
         osc.connect(gain);
-        gain.connect(solitaryFilter);
+        gain.connect(organFilter);
 
         osc.start(now);
-        osc.stop(now + tone.decay + 0.1);
+        osc.stop(now + totalDuration + 0.1);
       });
     } catch (err) {
       console.warn('Erro ao reproduzir choque de solitários:', err);
