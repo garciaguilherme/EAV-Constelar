@@ -1,0 +1,958 @@
+/* ==========================================================================
+   Velas na Escuridão — Folha de Estilos
+   Design System Atmosférico & Minimalista
+   ========================================================================== */
+
+:root {
+  --bg-void: #050507;
+  --bg-card: rgba(12, 12, 17, 0.55);
+  --bg-card-hover: rgba(20, 20, 28, 0.75);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(255, 214, 112, 0.4);
+  
+  --text-main: rgba(255, 255, 255, 0.88);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --text-faint: rgba(255, 255, 255, 0.28);
+
+  /* Paleta Lumínica de Velas */
+  --candle-boy-core: rgb(254, 240, 138);       /* Menino com amigos: Amarelo */
+  --candle-boy-glow: rgba(250, 204, 21, 0.65);
+  --candle-girl-core: rgb(254, 202, 202);      /* Menina com amigos: Vermelha */
+  --candle-girl-glow: rgba(239, 68, 68, 0.65);
+  --candle-solitary-boy-core: rgb(187, 247, 208); /* Menino sem amigos: Esverdeado */
+  --candle-solitary-boy-glow: rgba(34, 197, 94, 0.65);
+  --candle-solitary-girl-core: rgb(233, 213, 255); /* Menina sem amigos: Roxa */
+  --candle-solitary-girl-glow: rgba(168, 85, 247, 0.65);
+
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-void);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Canvas de Simulação */
+#ambient-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 1;
+  background-color: var(--bg-void);
+  cursor: default;
+}
+
+/* ==========================================================================
+   HUD Minimalista (Heads-Up Display)
+   ========================================================================== */
+
+/* Top-Left: Título e Amostragem */
+.hud-top-left {
+  position: fixed;
+  top: 2rem;
+  left: 2.2rem;
+  z-index: 10;
+  pointer-events: auto;
+  max-width: 440px;
+}
+
+.brand-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.main-title {
+  font-size: 1.85rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
+  line-height: 1.15;
+}
+
+.subtitle {
+  font-size: 0.92rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   Painel de Seleção Territorial PeNSE
+   ========================================================================== */
+
+.geo-panel {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: rgba(14, 14, 21, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.geo-panel:hover {
+  border-color: rgba(255, 214, 112, 0.25);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+}
+
+.geo-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.geo-label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+.geo-active-badge {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: #ffd670;
+  background: rgba(255, 214, 112, 0.12);
+  border: 1px solid rgba(255, 214, 112, 0.25);
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Abas de Escopo: Brasil, Estados (UF), Municípios */
+.geo-scope-tabs {
+  display: flex;
+  background: rgba(6, 6, 9, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.geo-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  padding: 0.38rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.geo-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.geo-tab.active {
+  background: rgba(255, 214, 112, 0.16);
+  color: #ffd670;
+  font-weight: 500;
+  box-shadow: 0 0 10px rgba(255, 214, 112, 0.15);
+}
+
+/* Custom Select Dropdown */
+.geo-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.geo-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(20, 20, 28, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 400;
+  padding: 0.52rem 2.2rem 0.52rem 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.geo-select:focus {
+  border-color: rgba(255, 214, 112, 0.5);
+  box-shadow: 0 0 14px rgba(255, 214, 112, 0.22);
+}
+
+.geo-select optgroup {
+  background: #0f1017;
+  color: #ffd670;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  padding: 0.4rem 0.2rem;
+}
+
+.geo-select option {
+  background: #141420;
+  color: #e2e8f0;
+  font-size: 0.84rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.geo-select-arrow {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Faixa Estatística Resumida */
+.locality-stats-strip {
+  background: rgba(7, 7, 11, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+}
+
+.stat-pill.total-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.stat-pill-label {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.stat-pill-val {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: #ffd670;
+  font-weight: 600;
+  text-shadow: 0 0 12px rgba(255, 214, 112, 0.4);
+}
+
+.stat-pill-ci {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+.stat-pill-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.71rem;
+  color: var(--text-muted);
+}
+
+.stat-pill-sub strong {
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.stat-pill-sub .sep {
+  color: var(--text-faint);
+}
+
+.sample-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+  padding: 0.32rem 0.75rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.sample-metric strong {
+  color: var(--candle-boy-core);
+  font-weight: 500;
+}
+
+.sample-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--candle-boy-core);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--candle-boy-core);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+    box-shadow: 0 0 12px var(--candle-boy-core);
+  }
+}
+
+/* ==========================================================================
+   Top-Right: Controles e Filtros
+   ========================================================================== */
+
+.hud-top-right {
+  position: fixed;
+  top: 2rem;
+  right: 2.2rem;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.control-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  padding: 0.35rem;
+  border-radius: 9999px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.2rem;
+  border-radius: 9999px;
+}
+
+.filter-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.filter-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 0 14px rgba(255, 214, 112, 0.22);
+  filter: brightness(1.2);
+}
+
+.filter-btn.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-right: 0.25rem;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.icon-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 14px rgba(255, 214, 112, 0.25);
+  filter: brightness(1.25);
+}
+
+.icon-btn.active {
+  color: var(--candle-boy-core);
+  background: rgba(255, 214, 112, 0.1);
+}
+
+.icon-btn .icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* ==========================================================================
+   Bottom-Left: Legenda Lumínica
+   ========================================================================== */
+
+.hud-bottom-left {
+  position: fixed;
+  bottom: 2rem;
+  left: 2.2rem;
+  z-index: 10;
+  pointer-events: auto;
+  max-width: 480px;
+}
+
+.legend-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.15rem 1.4rem;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
+  transition: border-color 0.3s ease;
+}
+
+.legend-panel:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.legend-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--text-faint);
+  margin-bottom: 0.8rem;
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: default;
+  transition: opacity 0.2s ease, filter 0.25s ease;
+}
+
+.legend-item:hover {
+  filter: brightness(1.25);
+}
+
+.legend-item:hover .luminary-dot {
+  transform: scale(1.16);
+  filter: brightness(1.25);
+}
+
+.luminary-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.luminary-dot.boy-glow {
+  background: var(--candle-boy-core);
+  box-shadow: 0 0 14px 4px var(--candle-boy-glow);
+}
+
+.luminary-dot.girl-glow {
+  background: var(--candle-girl-core);
+  box-shadow: 0 0 14px 4px var(--candle-girl-glow);
+}
+
+.luminary-dot.solitary-girl-glow {
+  background: rgb(216, 180, 254);
+  box-shadow: 0 0 12px 3px rgba(168, 85, 247, 0.70);
+}
+
+.luminary-dot.solitary-boy-glow {
+  background: rgb(134, 239, 172);
+  box-shadow: 0 0 12px 3px rgba(34, 197, 94, 0.70);
+}
+
+.luminary-dot.bonfire-glow {
+  background: radial-gradient(circle, #f87171 28%, #facc15 78%);
+  box-shadow: 0 0 14px 4px rgba(250, 204, 21, 0.65), 0 0 8px 2px rgba(239, 68, 68, 0.45);
+}
+
+.legend-desc {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-desc .name {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--text-main);
+}
+
+.legend-desc .meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.9rem 0;
+}
+
+.dynamics-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.dynamic-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dynamic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+
+.dynamic-badge:hover {
+  filter: brightness(1.28);
+  transform: translateY(-1px);
+}
+
+.dot-preview {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #fff;
+  display: inline-block;
+}
+
+.bonfire-preview {
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #f87171 22%, #facc15 68%, transparent 92%);
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.8), 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+.caption {
+  font-size: 0.71rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* ==========================================================================
+   Bottom-Right: Razão Estrutural & Dica de Interação
+   ========================================================================== */
+
+.hud-bottom-right {
+  position: fixed;
+  bottom: 2rem;
+  right: 2.2rem;
+  z-index: 10;
+  pointer-events: auto;
+  max-width: 380px;
+}
+
+.ratio-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
+  transition: all 0.3s var(--ease-smooth);
+}
+
+.ratio-card:hover {
+  border-color: rgba(255, 214, 112, 0.35);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 0 22px rgba(255, 214, 112, 0.18);
+  filter: brightness(1.1);
+}
+
+.ratio-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--text-faint);
+  margin-bottom: 0.2rem;
+}
+
+.ratio-value {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.ratio-detail {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 0.25rem;
+}
+
+.interaction-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.spark-icon {
+  color: var(--candle-boy-core);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Tooltip de Inspeção
+   ========================================================================== */
+
+.luminary-tooltip {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  background: rgba(14, 14, 20, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  width: 270px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 214, 112, 0.12);
+  opacity: 0;
+  transform: translate(-50%, -120%) scale(0.95);
+  transition: opacity 0.2s ease, transform 0.2s var(--ease-smooth);
+}
+
+.luminary-tooltip.visible {
+  opacity: 1;
+  transform: translate(-50%, -125%) scale(1);
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--candle-boy-core);
+  box-shadow: 0 0 8px var(--candle-boy-core);
+}
+
+.tooltip-type {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+
+.tooltip-body {
+  font-size: 0.78rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin-bottom: 0.4rem;
+}
+
+.tooltip-footer {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Modal "Sobre o Projeto"
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 7, 0.78);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-smooth);
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  position: relative;
+  background: rgba(16, 16, 23, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 2.2rem;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 214, 112, 0.08);
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.35s var(--ease-smooth);
+}
+
+.modal-backdrop.open .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #fff;
+}
+
+.modal-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--candle-boy-core);
+  margin-bottom: 0.4rem;
+}
+
+.modal-title {
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 1.4rem;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+
+.modal-section h3 {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.modal-section p {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.modal-section code {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+.highlight-section {
+  background: rgba(255, 214, 112, 0.04);
+  border: 1px solid rgba(255, 214, 112, 0.15);
+  border-radius: 14px;
+  padding: 1.2rem;
+}
+
+.modal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1rem 0 0.8rem 0;
+}
+
+.stat-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 0.8rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-number {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--candle-boy-core);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.stat-footnote {
+  font-size: 0.75rem !important;
+  color: var(--text-faint) !important;
+  font-style: italic;
+}
+
+.modal-action-row {
+  margin-top: 1.8rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background: var(--candle-boy-core);
+  color: #0c0c11;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 0.65rem 1.4rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.btn-primary:hover {
+  background: #fff;
+  box-shadow: 0 0 20px rgba(255, 214, 112, 0.6);
+}
+
+/* ==========================================================================
+   Responsividade
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .hud-top-left {
+    top: 1rem;
+    left: 1rem;
+    max-width: min(440px, calc(100vw - 2rem));
+  }
+  .geo-panel {
+    padding: 0.65rem 0.8rem;
+  }
+  .hud-top-right {
+    top: 1rem;
+    right: 1rem;
+  }
+  .hud-bottom-left {
+    bottom: 1rem;
+    left: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  .hud-bottom-right {
+    display: none;
+  }
+  .control-cluster {
+    flex-wrap: wrap;
+    border-radius: 16px;
+    padding: 0.25rem;
+  }
+  .filter-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.72rem;
+  }
+}
