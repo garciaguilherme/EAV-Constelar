@@ -9,6 +9,36 @@ const PENSE_DATABASE = {
     "id": "brasil",
     "name": "Brasil",
     "category": "Nacional",
+    "total": 4.5,
+    "total_ci": [
+      4.2,
+      4.8
+    ],
+    "homem": 4.8,
+    "homem_ci": [
+      4.4,
+      5.2
+    ],
+    "mulher": 4.1,
+    "mulher_ci": [
+      3.8,
+      4.4
+    ],
+    "publica": 4.9,
+    "publica_ci": [
+      4.6,
+      5.2
+    ],
+    "privada": 2.4,
+    "privada_ci": [
+      2.2,
+      2.6
+    ]
+  },
+  "norte": {
+    "id": "norte",
+    "name": "Norte",
+    "category": "Nacional",
     "total": 6.1,
     "total_ci": [
       5.6,
@@ -16,7 +46,7 @@ const PENSE_DATABASE = {
     ],
     "homem": 6.5,
     "homem_ci": [
-      5.8,
+      5.7,
       7.3
     ],
     "mulher": 5.7,
@@ -26,7 +56,7 @@ const PENSE_DATABASE = {
     ],
     "publica": 6.3,
     "publica_ci": [
-      5.8,
+      5.7,
       6.9
     ],
     "privada": 3.4,
@@ -35,28 +65,28 @@ const PENSE_DATABASE = {
       3.9
     ]
   },
-  "norte": {
-    "id": "norte",
-    "name": "Norte",
-    "category": "Nacional",
+  "rondonia": {
+    "id": "rondonia",
+    "name": "Rondônia",
+    "category": "UF",
     "total": 4.5,
     "total_ci": [
-      3.7,
+      3.8,
       5.2
     ],
     "homem": 5.1,
     "homem_ci": [
       3.9,
-      6.2
+      6.3
     ],
     "mulher": 3.9,
     "mulher_ci": [
-      2.9,
+      3,
       4.8
     ],
     "publica": 4.6,
     "publica_ci": [
-      3.9,
+      3.8,
       5.4
     ],
     "privada": 2.5,
@@ -65,9 +95,9 @@ const PENSE_DATABASE = {
       3.5
     ]
   },
-  "rondonia": {
-    "id": "rondonia",
-    "name": "Rondônia",
+  "acre": {
+    "id": "acre",
+    "name": "Acre",
     "category": "UF",
     "total": 6.1,
     "total_ci": [
@@ -79,29 +109,29 @@ const PENSE_DATABASE = {
       4.6,
       7.6
     ],
-    "mulher": 6.0,
+    "mulher": 6,
     "mulher_ci": [
-      4.5,
+      4.4,
       7.6
     ],
     "publica": 6.3,
     "publica_ci": [
-      5.2,
+      5.3,
       7.3
     ],
     "privada": 2.6,
     "privada_ci": [
       1.3,
-      3.8
+      3.9
     ]
   },
-  "acre": {
-    "id": "acre",
-    "name": "Acre",
+  "amazonas": {
+    "id": "amazonas",
+    "name": "Amazonas",
     "category": "UF",
     "total": 7.2,
     "total_ci": [
-      6.0,
+      6,
       8.4
     ],
     "homem": 7.4,
@@ -125,19 +155,19 @@ const PENSE_DATABASE = {
       4.9
     ]
   },
-  "amazonas": {
-    "id": "amazonas",
-    "name": "Amazonas",
+  "roraima": {
+    "id": "roraima",
+    "name": "Roraima",
     "category": "UF",
     "total": 7.3,
     "total_ci": [
-      6.0,
-      8.7
+      6,
+      8.6
     ],
     "homem": 8.5,
     "homem_ci": [
       6.5,
-      10.4
+      10.5
     ],
     "mulher": 6.1,
     "mulher_ci": [
@@ -147,22 +177,22 @@ const PENSE_DATABASE = {
     "publica": 7.6,
     "publica_ci": [
       6.2,
-      9.0
+      9
     ],
-    "privada": 2.0,
+    "privada": 2,
     "privada_ci": [
       1.3,
-      2.8
+      2.7
     ]
   },
-  "roraima": {
-    "id": "roraima",
-    "name": "Roraima",
+  "para": {
+    "id": "para",
+    "name": "Pará",
     "category": "UF",
     "total": 5.9,
     "total_ci": [
-      5.0,
-      6.9
+      5,
+      6.8
     ],
     "homem": 6.3,
     "homem_ci": [
@@ -185,18 +215,18 @@ const PENSE_DATABASE = {
       4.5
     ]
   },
-  "para": {
-    "id": "para",
-    "name": "Pará",
+  "amapa": {
+    "id": "amapa",
+    "name": "Amapá",
     "category": "UF",
     "total": 5.1,
     "total_ci": [
       4.2,
-      6.1
+      6
     ],
     "homem": 5.5,
     "homem_ci": [
-      4.2,
+      4.1,
       6.9
     ],
     "mulher": 4.7,
@@ -207,17 +237,17 @@ const PENSE_DATABASE = {
     "publica": 5.2,
     "publica_ci": [
       4.1,
-      6.2
+      6.3
     ],
     "privada": 4.5,
     "privada_ci": [
-      3.5,
+      3.6,
       5.4
     ]
   },
-  "amapa": {
-    "id": "amapa",
-    "name": "Amapá",
+  "tocantins": {
+    "id": "tocantins",
+    "name": "Tocantins",
     "category": "UF",
     "total": 5.9,
     "total_ci": [
@@ -226,29 +256,29 @@ const PENSE_DATABASE = {
     ],
     "homem": 6.7,
     "homem_ci": [
-      4.9,
+      4.8,
       8.6
     ],
-    "mulher": 5.0,
+    "mulher": 5,
     "mulher_ci": [
       3.8,
-      6.1
+      6.2
     ],
     "publica": 6.1,
     "publica_ci": [
-      5.0,
+      5,
       7.2
     ],
     "privada": 2.8,
     "privada_ci": [
-      2.0,
+      2,
       3.6
     ]
   },
-  "tocantins": {
-    "id": "tocantins",
-    "name": "Tocantins",
-    "category": "UF",
+  "nordeste": {
+    "id": "nordeste",
+    "name": "Nordeste",
+    "category": "Nacional",
     "total": 4.8,
     "total_ci": [
       4.4,
@@ -262,27 +292,27 @@ const PENSE_DATABASE = {
     "mulher": 4.4,
     "mulher_ci": [
       3.9,
-      5.0
+      4.9
     ],
     "publica": 5.1,
     "publica_ci": [
-      4.7,
+      4.6,
       5.6
     ],
     "privada": 2.6,
     "privada_ci": [
-      2.4,
+      2.3,
       2.9
     ]
   },
-  "nordeste": {
-    "id": "nordeste",
-    "name": "Nordeste",
-    "category": "Nacional",
-    "total": 5.0,
+  "maranhao": {
+    "id": "maranhao",
+    "name": "Maranhão",
+    "category": "UF",
+    "total": 5,
     "total_ci": [
-      4.0,
-      6.0
+      4,
+      6
     ],
     "homem": 5.1,
     "homem_ci": [
@@ -301,13 +331,13 @@ const PENSE_DATABASE = {
     ],
     "privada": 2.8,
     "privada_ci": [
-      2.0,
-      3.7
+      2,
+      3.6
     ]
   },
-  "maranhao": {
-    "id": "maranhao",
-    "name": "Maranhão",
+  "piaui": {
+    "id": "piaui",
+    "name": "Piauí",
     "category": "UF",
     "total": 4.3,
     "total_ci": [
@@ -326,7 +356,7 @@ const PENSE_DATABASE = {
     ],
     "publica": 4.5,
     "publica_ci": [
-      3.4,
+      3.5,
       5.5
     ],
     "privada": 3.2,
@@ -335,39 +365,39 @@ const PENSE_DATABASE = {
       4.2
     ]
   },
-  "piaui": {
-    "id": "piaui",
-    "name": "Piauí",
+  "ceara": {
+    "id": "ceara",
+    "name": "Ceará",
     "category": "UF",
     "total": 5.6,
     "total_ci": [
       4.2,
-      7.1
+      7
     ],
     "homem": 6.5,
     "homem_ci": [
-      4.0,
-      9.0
+      4,
+      9
     ],
     "mulher": 4.8,
     "mulher_ci": [
       3.1,
-      6.4
+      6.5
     ],
-    "publica": 6.0,
+    "publica": 6,
     "publica_ci": [
       4.4,
-      7.7
+      7.6
     ],
     "privada": 2.8,
     "privada_ci": [
       2.1,
-      3.4
+      3.5
     ]
   },
-  "ceara": {
-    "id": "ceara",
-    "name": "Ceará",
+  "rio_grande_do_norte": {
+    "id": "rio_grande_do_norte",
+    "name": "Rio Grande do Norte",
     "category": "UF",
     "total": 4.4,
     "total_ci": [
@@ -392,22 +422,22 @@ const PENSE_DATABASE = {
     "privada": 2.3,
     "privada_ci": [
       1.6,
-      3.0
+      3
     ]
   },
-  "rio_grande_do_norte": {
-    "id": "rio_grande_do_norte",
-    "name": "Rio Grande do Norte",
+  "paraiba": {
+    "id": "paraiba",
+    "name": "Paraíba",
     "category": "UF",
     "total": 4.3,
     "total_ci": [
       3.1,
       5.5
     ],
-    "homem": 5.0,
+    "homem": 5,
     "homem_ci": [
       3.5,
-      6.6
+      6.5
     ],
     "mulher": 3.6,
     "mulher_ci": [
@@ -417,7 +447,7 @@ const PENSE_DATABASE = {
     "publica": 4.6,
     "publica_ci": [
       3.2,
-      6.1
+      6
     ],
     "privada": 2.7,
     "privada_ci": [
@@ -425,9 +455,9 @@ const PENSE_DATABASE = {
       3.3
     ]
   },
-  "paraiba": {
-    "id": "paraiba",
-    "name": "Paraíba",
+  "pernambuco": {
+    "id": "pernambuco",
+    "name": "Pernambuco",
     "category": "UF",
     "total": 4.1,
     "total_ci": [
@@ -436,7 +466,7 @@ const PENSE_DATABASE = {
     ],
     "homem": 5.1,
     "homem_ci": [
-      3.4,
+      3.5,
       6.7
     ],
     "mulher": 3.3,
@@ -452,27 +482,27 @@ const PENSE_DATABASE = {
     "privada": 2.4,
     "privada_ci": [
       1.8,
-      3.0
+      3
     ]
   },
-  "pernambuco": {
-    "id": "pernambuco",
-    "name": "Pernambuco",
+  "alagoas": {
+    "id": "alagoas",
+    "name": "Alagoas",
     "category": "UF",
-    "total": 5.0,
+    "total": 5,
     "total_ci": [
       4.1,
       5.9
     ],
     "homem": 6.2,
     "homem_ci": [
-      4.7,
+      4.8,
       7.6
     ],
     "mulher": 3.9,
     "mulher_ci": [
-      3.0,
-      4.7
+      3,
+      4.8
     ],
     "publica": 5.4,
     "publica_ci": [
@@ -481,13 +511,13 @@ const PENSE_DATABASE = {
     ],
     "privada": 2.9,
     "privada_ci": [
-      2.0,
+      2,
       3.8
     ]
   },
-  "alagoas": {
-    "id": "alagoas",
-    "name": "Alagoas",
+  "sergipe": {
+    "id": "sergipe",
+    "name": "Sergipe",
     "category": "UF",
     "total": 5.2,
     "total_ci": [
@@ -496,7 +526,7 @@ const PENSE_DATABASE = {
     ],
     "homem": 6.1,
     "homem_ci": [
-      5.1,
+      5,
       7.2
     ],
     "mulher": 4.3,
@@ -507,17 +537,17 @@ const PENSE_DATABASE = {
     "publica": 5.6,
     "publica_ci": [
       4.8,
-      6.5
+      6.4
     ],
     "privada": 3.2,
     "privada_ci": [
       2.5,
-      4.0
+      3.9
     ]
   },
-  "sergipe": {
-    "id": "sergipe",
-    "name": "Sergipe",
+  "bahia": {
+    "id": "bahia",
+    "name": "Bahia",
     "category": "UF",
     "total": 4.7,
     "total_ci": [
@@ -531,24 +561,24 @@ const PENSE_DATABASE = {
     ],
     "mulher": 5.1,
     "mulher_ci": [
-      3.7,
+      3.8,
       6.4
     ],
     "publica": 5.1,
     "publica_ci": [
       4.2,
-      6.1
+      6
     ],
     "privada": 2.5,
     "privada_ci": [
       1.8,
-      3.1
+      3.2
     ]
   },
-  "bahia": {
-    "id": "bahia",
-    "name": "Bahia",
-    "category": "UF",
+  "sudeste": {
+    "id": "sudeste",
+    "name": "Sudeste",
+    "category": "Nacional",
     "total": 4.1,
     "total_ci": [
       3.5,
@@ -556,7 +586,7 @@ const PENSE_DATABASE = {
     ],
     "homem": 4.5,
     "homem_ci": [
-      3.8,
+      3.7,
       5.3
     ],
     "mulher": 3.6,
@@ -572,14 +602,14 @@ const PENSE_DATABASE = {
     "privada": 2.2,
     "privada_ci": [
       1.8,
-      2.7
+      2.6
     ]
   },
-  "sudeste": {
-    "id": "sudeste",
-    "name": "Sudeste",
-    "category": "Nacional",
-    "total": 4.0,
+  "minas_gerais": {
+    "id": "minas_gerais",
+    "name": "Minas Gerais",
+    "category": "UF",
+    "total": 4,
     "total_ci": [
       3.2,
       4.8
@@ -587,47 +617,47 @@ const PENSE_DATABASE = {
     "homem": 4.3,
     "homem_ci": [
       3.1,
-      5.4
+      5.5
     ],
     "mulher": 3.8,
     "mulher_ci": [
       2.7,
-      4.8
+      4.9
     ],
     "publica": 4.3,
     "publica_ci": [
       3.4,
-      5.1
+      5.2
     ],
     "privada": 2.3,
     "privada_ci": [
       1.6,
-      3.0
+      3
     ]
   },
-  "minas_gerais": {
-    "id": "minas_gerais",
-    "name": "Minas Gerais",
+  "espirito_santo": {
+    "id": "espirito_santo",
+    "name": "Espírito Santo",
     "category": "UF",
     "total": 3.8,
     "total_ci": [
       2.6,
-      4.9
+      5
     ],
     "homem": 3.6,
     "homem_ci": [
       1.7,
-      5.4
+      5.5
     ],
-    "mulher": 4.0,
+    "mulher": 4,
     "mulher_ci": [
-      2.0,
-      6.0
+      2,
+      6
     ],
     "publica": 3.9,
     "publica_ci": [
       2.6,
-      5.3
+      5.2
     ],
     "privada": 2.6,
     "privada_ci": [
@@ -635,49 +665,49 @@ const PENSE_DATABASE = {
       3.5
     ]
   },
-  "espirito_santo": {
-    "id": "espirito_santo",
-    "name": "Espírito Santo",
+  "rio_de_janeiro": {
+    "id": "rio_de_janeiro",
+    "name": "Rio de Janeiro",
     "category": "UF",
     "total": 4.3,
     "total_ci": [
       3.6,
-      5.0
+      5
     ],
     "homem": 4.5,
     "homem_ci": [
       3.3,
-      5.6
+      5.7
     ],
     "mulher": 4.1,
     "mulher_ci": [
       3.1,
       5.1
     ],
-    "publica": 5.0,
+    "publica": 5,
     "publica_ci": [
-      4.0,
-      6.0
+      4,
+      6
     ],
     "privada": 2.4,
     "privada_ci": [
       1.7,
-      3.2
+      3.1
     ]
   },
-  "rio_de_janeiro": {
-    "id": "rio_de_janeiro",
-    "name": "Rio de Janeiro",
+  "sao_paulo": {
+    "id": "sao_paulo",
+    "name": "São Paulo",
     "category": "UF",
     "total": 4.1,
     "total_ci": [
       3.1,
-      5.0
+      5.1
     ],
     "homem": 4.7,
     "homem_ci": [
       3.5,
-      6.0
+      5.9
     ],
     "mulher": 3.4,
     "mulher_ci": [
@@ -686,7 +716,7 @@ const PENSE_DATABASE = {
     ],
     "publica": 4.6,
     "publica_ci": [
-      3.3,
+      3.4,
       5.8
     ],
     "privada": 2.1,
@@ -695,10 +725,10 @@ const PENSE_DATABASE = {
       2.8
     ]
   },
-  "sao_paulo": {
-    "id": "sao_paulo",
-    "name": "São Paulo",
-    "category": "UF",
+  "sul": {
+    "id": "sul",
+    "name": "Sul",
+    "category": "Nacional",
     "total": 3.5,
     "total_ci": [
       2.9,
@@ -706,7 +736,7 @@ const PENSE_DATABASE = {
     ],
     "homem": 3.1,
     "homem_ci": [
-      2.4,
+      2.3,
       3.9
     ],
     "mulher": 3.9,
@@ -717,7 +747,7 @@ const PENSE_DATABASE = {
     "publica": 3.8,
     "publica_ci": [
       3.1,
-      4.4
+      4.5
     ],
     "privada": 1.9,
     "privada_ci": [
@@ -725,19 +755,19 @@ const PENSE_DATABASE = {
       2.3
     ]
   },
-  "sul": {
-    "id": "sul",
-    "name": "Sul",
-    "category": "Nacional",
+  "parana": {
+    "id": "parana",
+    "name": "Paraná",
+    "category": "UF",
     "total": 3.1,
     "total_ci": [
       2.2,
-      4.1
+      4
     ],
     "homem": 3.6,
     "homem_ci": [
       2.3,
-      4.8
+      4.9
     ],
     "mulher": 2.7,
     "mulher_ci": [
@@ -747,17 +777,17 @@ const PENSE_DATABASE = {
     "publica": 3.4,
     "publica_ci": [
       2.3,
-      4.4
+      4.5
     ],
     "privada": 1.8,
     "privada_ci": [
       1.2,
-      2.5
+      2.4
     ]
   },
-  "parana": {
-    "id": "parana",
-    "name": "Paraná",
+  "santa_catarina": {
+    "id": "santa_catarina",
+    "name": "Santa Catarina",
     "category": "UF",
     "total": 3.7,
     "total_ci": [
@@ -774,25 +804,25 @@ const PENSE_DATABASE = {
       3.3,
       6.1
     ],
-    "publica": 4.0,
+    "publica": 4,
     "publica_ci": [
       2.8,
       5.2
     ],
-    "privada": 2.0,
+    "privada": 2,
     "privada_ci": [
       1.2,
       2.8
     ]
   },
-  "santa_catarina": {
-    "id": "santa_catarina",
-    "name": "Santa Catarina",
+  "rio_grande_do_sul": {
+    "id": "rio_grande_do_sul",
+    "name": "Rio Grande do Sul",
     "category": "UF",
     "total": 3.8,
     "total_ci": [
       2.7,
-      4.8
+      4.9
     ],
     "homem": 2.9,
     "homem_ci": [
@@ -815,11 +845,11 @@ const PENSE_DATABASE = {
       2.4
     ]
   },
-  "rio_grande_do_sul": {
-    "id": "rio_grande_do_sul",
-    "name": "Rio Grande do Sul",
-    "category": "UF",
-    "total": 5.0,
+  "centro-oeste": {
+    "id": "centro-oeste",
+    "name": "Centro-Oeste",
+    "category": "Nacional",
+    "total": 5,
     "total_ci": [
       4.5,
       5.5
@@ -827,17 +857,17 @@ const PENSE_DATABASE = {
     "homem": 5.7,
     "homem_ci": [
       4.9,
-      6.6
+      6.5
     ],
     "mulher": 4.2,
     "mulher_ci": [
       3.4,
-      5.0
+      5
     ],
     "publica": 5.4,
     "publica_ci": [
       4.8,
-      6.0
+      6
     ],
     "privada": 2.5,
     "privada_ci": [
@@ -845,16 +875,16 @@ const PENSE_DATABASE = {
       2.9
     ]
   },
-  "centro-oeste": {
-    "id": "centro-oeste",
-    "name": "Centro-Oeste",
-    "category": "Nacional",
+  "mato_grosso_do_sul": {
+    "id": "mato_grosso_do_sul",
+    "name": "Mato Grosso do Sul",
+    "category": "UF",
     "total": 5.7,
     "total_ci": [
       4.4,
-      7.0
+      7
     ],
-    "homem": 6.0,
+    "homem": 6,
     "homem_ci": [
       4.2,
       7.8
@@ -872,17 +902,17 @@ const PENSE_DATABASE = {
     "privada": 2.5,
     "privada_ci": [
       1.8,
-      3.1
+      3.2
     ]
   },
-  "mato_grosso_do_sul": {
-    "id": "mato_grosso_do_sul",
-    "name": "Mato Grosso do Sul",
+  "mato_grosso": {
+    "id": "mato_grosso",
+    "name": "Mato Grosso",
     "category": "UF",
     "total": 6.2,
     "total_ci": [
-      5.0,
-      7.3
+      5,
+      7.4
     ],
     "homem": 7.4,
     "homem_ci": [
@@ -905,64 +935,34 @@ const PENSE_DATABASE = {
       4.4
     ]
   },
-  "mato_grosso": {
-    "id": "mato_grosso",
-    "name": "Mato Grosso",
-    "category": "UF",
-    "total": 4.3,
-    "total_ci": [
-      3.5,
-      5.0
-    ],
-    "homem": 5.3,
-    "homem_ci": [
-      4.0,
-      6.6
-    ],
-    "mulher": 3.2,
-    "mulher_ci": [
-      2.0,
-      4.5
-    ],
-    "publica": 4.6,
-    "publica_ci": [
-      3.7,
-      5.4
-    ],
-    "privada": 2.5,
-    "privada_ci": [
-      1.8,
-      3.1
-    ]
-  },
   "goias": {
     "id": "goias",
     "name": "Goiás",
     "category": "UF",
-    "total": 4.5,
+    "total": 4.3,
     "total_ci": [
-      3.2,
-      5.8
+      3.6,
+      5
     ],
-    "homem": 4.2,
+    "homem": 5.3,
     "homem_ci": [
-      2.4,
-      6.0
-    ],
-    "mulher": 4.8,
-    "mulher_ci": [
-      3.0,
+      4,
       6.6
     ],
-    "publica": 5.3,
-    "publica_ci": [
-      3.6,
-      7.0
+    "mulher": 3.2,
+    "mulher_ci": [
+      2,
+      4.4
     ],
-    "privada": 2.1,
+    "publica": 4.6,
+    "publica_ci": [
+      3.7,
+      5.5
+    ],
+    "privada": 2.5,
     "privada_ci": [
-      1.4,
-      2.7
+      1.9,
+      3.1
     ]
   },
   "distrito_federal": {
@@ -977,22 +977,22 @@ const PENSE_DATABASE = {
     "homem": 4.2,
     "homem_ci": [
       2.4,
-      6.0
+      6
     ],
     "mulher": 4.8,
     "mulher_ci": [
-      3.0,
+      3,
       6.6
     ],
     "publica": 5.3,
     "publica_ci": [
       3.6,
-      7.0
+      7
     ],
     "privada": 2.1,
     "privada_ci": [
       1.4,
-      2.7
+      2.8
     ]
   },
   "cap_porto_velho": {
